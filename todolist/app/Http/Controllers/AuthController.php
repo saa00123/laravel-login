@@ -28,6 +28,11 @@ class AuthController extends Controller
         return response()->json(['access_token' => $token, 'user' => $user], 201);
     }
 
+    public function user(Request $request)
+    {
+        return $request->user();
+    }
+
     public function login(Request $request)
     {
         $credentials = $request->validate([

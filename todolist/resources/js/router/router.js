@@ -6,7 +6,7 @@ import TodoList from "../components/TodoList.vue";
 const routes = [
   { path: "/", component: LoginForm },
   { path: "/register", component: RegisterForm },
-  { path: "/todos", component: TodoList },
+  { path: "/:userId/todos", component: TodoList, props: true },
 ];
 
 const router = createRouter({

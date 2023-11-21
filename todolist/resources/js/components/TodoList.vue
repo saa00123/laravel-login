@@ -42,13 +42,16 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 
 export default {
-  setup() {
+  props: {
+    userId: Number,
+  },
+  setup(props) {
     const todos = ref([]);
     const newTodo = ref("");
 
     const fetchTodos = async () => {
       try {
-        const response = await axios.get("/api/todos");
+        const response = await axios.get(`/api/user/${props.userId}/todos`);
         todos.value = response.data;
       } catch (error) {
         console.error(error);
