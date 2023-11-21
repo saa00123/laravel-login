@@ -1,7 +1,10 @@
-import './bootstrap';
+import { createApp } from "vue";
+import TodoList from "./components/TodoList.vue";
 
-import Alpine from 'alpinejs';
+const app = createApp({
+    components: {
+        "todo-list": TodoList,
+    },
+});
 
-window.Alpine = Alpine;
-
-Alpine.start();
+app.mount("#app");
