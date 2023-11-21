@@ -23,11 +23,14 @@
           @change="updateTodo(todo)"
         />
         <span v-if="!todo.editing">{{ todo.title }}</span>
-        <input v-if="todo.editing" type="text" v-model="todo.updatedTitle" />
-        <button v-if="!todo.editing" @click="editTodo(todo)">Edit</button>
-        <button v-if="todo.editing" @click="saveUpdatedTodo(todo)">
-          Update
-        </button>
+        <input
+          v-if="todo.editing"
+          type="text"
+          v-model="todo.updatedTitle"
+          @blur="saveUpdatedTodo(todo)"
+          @keyup.enter="saveUpdatedTodo(todo)"
+        />
+        <button @click="editTodo(todo)">Edit</button>
         <button @click="deleteTodo(todo)">Delete</button>
       </li>
     </ul>

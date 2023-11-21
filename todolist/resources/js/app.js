@@ -1,6 +1,5 @@
 import { createApp } from "vue";
-import TodoList from "./components/TodoList.vue";
+import App from "./App.vue";
+import router from "./router/router";
 
-const app = createApp({});
-app.component("todo-list", TodoList);
-app.mount("#app");
+createApp(App).use(router).mount("#app");
