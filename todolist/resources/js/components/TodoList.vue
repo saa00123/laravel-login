@@ -22,7 +22,12 @@
           v-model="todo.completed"
           @change="updateTodo(todo)"
         />
-        {{ todo.title }}
+        <span v-if="!todo.editing">{{ todo.title }}</span>
+        <input v-if="todo.editing" type="text" v-model="todo.updatedTitle" />
+        <button v-if="!todo.editing" @click="editTodo(todo)">Edit</button>
+        <button v-if="todo.editing" @click="saveUpdatedTodo(todo)">
+          Update
+        </button>
         <button @click="deleteTodo(todo)">Delete</button>
       </li>
     </ul>
@@ -71,6 +76,28 @@ export default {
       }
     };
 
+    const editTodo = (todo) => {
+      todo.editing = true;
+      todo.updatedTitle = todo.title;
+    };
+
+    const saveUpdatedTodo = async (todo) => {
+      if (todo.updatedTitle.trim()) {
+        try {
+          await axios.put(`/api/todos/${todo.id}`, {
+            title: todo.updatedTitle,
+            completed: todo.completed,
+          });
+          todo.title = todo.updatedTitle;
+          todo.editing = false;
+        } catch (error) {
+          console.error(error);
+        }
+      } else {
+        todo.editing = false;
+      }
+    };
+
     const deleteTodo = async (todo) => {
       try {
         await axios.delete(`/api/todos/${todo.id}`);
@@ -82,7 +109,15 @@ export default {
 
     onMounted(fetchTodos);
 
-    return { todos, newTodo, addTodo, updateTodo, deleteTodo };
+    return {
+      todos,
+      newTodo,
+      addTodo,
+      updateTodo,
+      editTodo,
+      saveUpdatedTodo,
+      deleteTodo,
+    };
   },
 };
 </script>
