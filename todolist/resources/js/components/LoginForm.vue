@@ -28,6 +28,13 @@ export default {
     const login = async () => {
       try {
         const response = await axios.post("/api/login", loginForm);
+        if (response.data.access_token) {
+          localStorage.setItem("token", response.data.access_token);
+          axios.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${response.data.access_token}`;
+        }
+
         store.user = { ...response.data.user, registered: true };
 
         const userId = response.data.user.id;
@@ -44,7 +51,6 @@ export default {
     return {
       ...toRefs(loginForm),
       login,
-      useRouter,
       goToRegister,
     };
   },

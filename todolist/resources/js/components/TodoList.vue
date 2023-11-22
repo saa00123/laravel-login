@@ -43,7 +43,12 @@ import axios from "axios";
 
 export default {
   props: {
-    userId: Number,
+    userId: {
+      type: Number,
+      required: true,
+      default: () => 0,
+      validator: (value) => !isNaN(parseInt(value)),
+    },
   },
   setup(props) {
     const todos = ref([]);
@@ -61,7 +66,7 @@ export default {
     const addTodo = async () => {
       if (newTodo.value.trim()) {
         try {
-          const response = await axios.post("/api/todos", {
+          const response = await axios.post(`/api/user/${props.userId}/todos`, {
             title: newTodo.value,
           });
           todos.value.push(response.data);
@@ -74,7 +79,7 @@ export default {
 
     const updateTodo = async (todo) => {
       try {
-        await axios.put(`/api/todos/${todo.id}`, {
+        await axios.put(`/api/user/${props.userId}/todos/${todo.id}`, {
           completed: todo.completed,
         });
       } catch (error) {
@@ -90,7 +95,7 @@ export default {
     const saveUpdatedTodo = async (todo) => {
       if (todo.updatedTitle.trim()) {
         try {
-          await axios.put(`/api/todos/${todo.id}`, {
+          await axios.put(`/api/user/${props.userId}/todos/${todo.id}`, {
             title: todo.updatedTitle,
             completed: todo.completed,
           });
@@ -106,7 +111,7 @@ export default {
 
     const deleteTodo = async (todo) => {
       try {
-        await axios.delete(`/api/todos/${todo.id}`);
+        await axios.delete(`/api/user/${props.userId}/todos/${todo.id}`);
         todos.value = todos.value.filter((t) => t.id !== todo.id);
       } catch (error) {
         console.error(error);
