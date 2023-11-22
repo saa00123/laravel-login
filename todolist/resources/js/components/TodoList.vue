@@ -1,6 +1,7 @@
 <template>
   <div class="todo-container">
     <h1>Todo List</h1>
+    <button @click="logout">Logout</button>
     <div class="add-todo">
       <input
         type="text"
@@ -40,6 +41,7 @@
 <script>
 import { ref, onMounted } from "vue";
 import axios from "axios";
+import { useRouter } from "vue-router";
 
 export default {
   props: {
@@ -53,6 +55,7 @@ export default {
   setup(props) {
     const todos = ref([]);
     const newTodo = ref("");
+    const router = useRouter();
 
     const fetchTodos = async () => {
       try {
@@ -118,6 +121,15 @@ export default {
       }
     };
 
+    const logout = async () => {
+      try {
+        await axios.post("/api/logout");
+        router.push("/");
+      } catch (error) {
+        console.error("Logout failed:", error);
+      }
+    };
+
     onMounted(fetchTodos);
 
     return {
@@ -128,6 +140,7 @@ export default {
       editTodo,
       saveUpdatedTodo,
       deleteTodo,
+      logout,
     };
   },
 };
