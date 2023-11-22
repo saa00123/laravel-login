@@ -1,11 +1,30 @@
 <template>
-  <div>
-    <h2>Register</h2>
-    <form @submit.prevent="register">
-      <input v-model="name" type="text" placeholder="Name" />
-      <input v-model="email" type="email" placeholder="Email" />
-      <input v-model="password" type="password" placeholder="Password" />
-      <button type="submit">Register</button>
+  <div
+    class="form-container max-w-md mx-auto my-10 bg-white p-6 rounded-lg shadow-lg"
+  >
+    <h2 class="text-3xl font-bold text-gray-800 mb-6">Register</h2>
+    <form @submit.prevent="register" class="space-y-4">
+      <input
+        v-model="name"
+        type="text"
+        placeholder="Name"
+        class="border-2 rounded-lg p-1"
+      />
+      <input
+        v-model="email"
+        type="email"
+        placeholder="Email"
+        class="border-2 rounded-lg p-1 ml-5"
+      />
+      <input
+        v-model="password"
+        type="password"
+        placeholder="Password"
+        class="border-2 rounded-lg p-1 w-full"
+      />
+      <button type="submit" class="border-2 rounded-lg p-1 w-full">
+        Register
+      </button>
     </form>
   </div>
 </template>
@@ -44,25 +63,3 @@ export default {
   },
 };
 </script>
-
-<style>
-.form-container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-  text-align: center;
-}
-
-.form-container input[type="text"],
-.form-container input[type="email"],
-.form-container input[type="password"] {
-  padding: 10px;
-  width: 70%;
-  margin-bottom: 10px;
-}
-
-.form-container button {
-  padding: 10px 20px;
-  cursor: pointer;
-}
-</style>

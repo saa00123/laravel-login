@@ -1,12 +1,28 @@
 <template>
-  <div class="form-container">
-    <h2>Login</h2>
-    <form @submit.prevent="login">
-      <input v-model="email" type="email" placeholder="Email" />
-      <input v-model="password" type="password" placeholder="Password" />
-      <button type="submit">Login</button>
+  <div
+    class="form-container max-w-md mx-auto my-10 bg-white p-6 rounded-lg shadow-lg"
+  >
+    <h2 class="text-3xl font-bold text-gray-800 mb-6">Login</h2>
+    <form @submit.prevent="login" class="space-y-4">
+      <input
+        v-model="email"
+        type="email"
+        placeholder="Email"
+        class="border-2 rounded-lg p-1"
+      />
+      <input
+        v-model="password"
+        type="password"
+        placeholder="Password"
+        class="border-2 rounded-lg p-1 ml-5"
+      />
+      <button type="submit" class="border-2 rounded-lg p-1 w-full">
+        Login
+      </button>
     </form>
-    <button @click="goToRegister">Register</button>
+    <button @click="goToRegister" class="border-2 rounded-lg p-1 w-full mt-4">
+      Register
+    </button>
   </div>
 </template>
 
@@ -56,24 +72,3 @@ export default {
   },
 };
 </script>
-
-<style>
-.form-container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-  text-align: center;
-}
-
-.form-container input[type="email"],
-.form-container input[type="password"] {
-  padding: 10px;
-  width: 70%;
-  margin-bottom: 10px;
-}
-
-.form-container button {
-  padding: 10px 20px;
-  cursor: pointer;
-}
-</style>
