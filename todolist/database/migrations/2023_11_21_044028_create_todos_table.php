@@ -14,7 +14,7 @@ class CreateTodosTable extends Migration
             $table->string('title');
             $table->boolean('completed')->default(false);
             $table->timestamps();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('user')->onDelete('cascade'); // 'users' 대신 'user'로 변경
         });
     }
 

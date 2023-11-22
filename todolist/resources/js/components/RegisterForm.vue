@@ -12,21 +12,23 @@
 
 <script>
 import axios from "axios";
-import { reactive, toRefs, onMounted } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 export default {
   setup() {
     const router = useRouter();
-    const registerForm = reactive({
-      name: "",
-      email: "",
-      password: "",
-    });
+    const name = ref("");
+    const email = ref("");
+    const password = ref("");
 
     const register = async () => {
       try {
-        const response = await axios.post("/api/register", registerForm);
+        const response = await axios.post("/api/register", {
+          name: name.value,
+          email: email.value,
+          password: password.value,
+        });
         router.push("/");
       } catch (error) {
         console.error("Registration failed:", error);
@@ -34,7 +36,9 @@ export default {
     };
 
     return {
-      ...toRefs(registerForm),
+      name,
+      email,
+      password,
       register,
     };
   },
