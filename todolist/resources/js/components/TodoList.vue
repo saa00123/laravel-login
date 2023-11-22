@@ -17,7 +17,7 @@
         v-for="todo in todos"
         :key="todo.id"
         :class="{ 'line-through text-gray-500': todo.completed }"
-        class="flex items-center justify-between p-3 border rounded"
+        class="flex border-2 rounded-lg items-center justify-between p-3 border rounded"
       >
         <div class="flex items-center">
           <input
@@ -33,7 +33,7 @@
             v-model="todo.updatedTitle"
             @blur="saveUpdatedTodo(todo)"
             @keyup.enter="saveUpdatedTodo(todo)"
-            class="form-input"
+            class="border-2 rounded-lg p-1"
           />
         </div>
         <div class="flex space-x-2">
@@ -55,18 +55,19 @@ import axios from "axios";
 import { useRouter } from "vue-router";
 
 export default {
-  props: {
-    userId: {
-      type: Number,
-      required: true,
-      default: () => 0,
-      validator: (value) => !isNaN(parseInt(value)),
-    },
-  },
-  setup(props) {
+  setup() {
     const todos = ref([]);
     const newTodo = ref("");
     const router = useRouter();
+
+    const props = defineProps({
+      userId: {
+        type: Number,
+        required: true,
+        default: 0,
+        validator: (value) => !isNaN(parseInt(value)),
+      },
+    });
 
     const fetchTodos = async () => {
       try {
