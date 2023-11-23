@@ -38,11 +38,16 @@ const loginForm = reactive({
   password: "",
 });
 
+const { email, password } = toRefs(loginForm);
+
 const router = useRouter();
 
 const login = async () => {
   try {
-    const response = await axios.post("/api/login", loginForm);
+    const response = await axios.post("/api/login", {
+      email: email.value,
+      password: password.value,
+    });
     if (response.data.access_token) {
       VueCookieNext.setCookie("token", response.data.access_token, {
         expires: "1d",
@@ -55,8 +60,12 @@ const login = async () => {
 
     store.user = { ...response.data.user, registered: true };
 
-    const userId = response.data.user.id;
-    router.push(`/${userId}/todos`);
+    if (response.data.user.is_admin) {
+      router.push("/admin");
+    } else {
+      const userId = response.data.user.id;
+      router.push(`/${userId}/todos`);
+    }
   } catch (error) {
     console.error("Login failed:", error);
   }
