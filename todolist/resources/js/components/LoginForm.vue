@@ -39,7 +39,6 @@ const loginForm = reactive({
 });
 
 const { email, password } = toRefs(loginForm);
-
 const router = useRouter();
 
 const login = async () => {
@@ -56,16 +55,18 @@ const login = async () => {
       axios.defaults.headers.common[
         "Authorization"
       ] = `Bearer ${response.data.access_token}`;
+
+      if (response.data.user.is_admin) {
+        VueCookieNext.setCookie("userRole", "admin", { expires: "1d" });
+        router.push("/admin");
+      } else {
+        VueCookieNext.removeCookie("userRole");
+        const userId = response.data.user.id;
+        router.push(`/${userId}/todos`);
+      }
     }
 
     store.user = { ...response.data.user, registered: true };
-
-    if (response.data.user.is_admin) {
-      router.push("/admin");
-    } else {
-      const userId = response.data.user.id;
-      router.push(`/${userId}/todos`);
-    }
   } catch (error) {
     console.error("Login failed:", error);
   }

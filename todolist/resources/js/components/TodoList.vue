@@ -4,6 +4,13 @@
     <button @click="logout" class="border-2 rounded-lg p-1 w-full mb-6">
       Logout
     </button>
+    <button
+      v-if="isAdmin"
+      @click="goToAdminDashboard"
+      class="border-2 rounded-lg p-1 w-full mb-6"
+    >
+      Go to Admin Dashboard
+    </button>
     <div class="flex items-center mb-4">
       <input
         type="text"
@@ -53,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
@@ -143,6 +150,15 @@ const logout = async () => {
   } catch (error) {
     console.error("Logout failed:", error);
   }
+};
+
+const isAdmin = computed(() => {
+  const userRole = VueCookieNext.getCookie("userRole");
+  return userRole === "admin";
+});
+
+const goToAdminDashboard = () => {
+  router.push("/admin");
 };
 
 onMounted(fetchTodos);
