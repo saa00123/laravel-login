@@ -56,11 +56,15 @@ const login = async () => {
         "Authorization"
       ] = `Bearer ${response.data.access_token}`;
 
+      VueCookieNext.setCookie(
+        "isAdmin",
+        response.data.user.is_admin ? "true" : "false",
+        { expires: "1d" },
+      );
+
       if (response.data.user.is_admin) {
-        VueCookieNext.setCookie("userRole", "admin", { expires: "1d" });
         router.push("/admin");
       } else {
-        VueCookieNext.removeCookie("userRole");
         const userId = response.data.user.id;
         router.push(`/${userId}/todos`);
       }

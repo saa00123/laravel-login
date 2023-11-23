@@ -153,8 +153,8 @@ const logout = async () => {
 };
 
 const isAdmin = computed(() => {
-  const userRole = VueCookieNext.getCookie("userRole");
-  return userRole === "admin";
+  const adminCookie = VueCookieNext.getCookie("isAdmin");
+  return adminCookie === "true";
 });
 
 const goToAdminDashboard = () => {

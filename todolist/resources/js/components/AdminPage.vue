@@ -18,6 +18,7 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
+import { VueCookieNext } from "vue-cookie-next";
 
 const users = ref([]);
 const router = useRouter();
@@ -35,7 +36,14 @@ const fetchTodosByUserId = async (userId) => {
 const fetchUsers = async () => {
   try {
     const response = await axios.get("/api/admin");
-    const usersData = response.data;
+    let usersData = response.data;
+
+    const loggedInAdminId =
+      VueCookieNext.getCookie("isAdmin") === "true"
+        ? parseInt(VueCookieNext.getCookie("adminId"))
+        : null;
+
+    usersData = usersData.filter((user) => user.name.toLowerCase() !== "admin");
 
     for (const user of usersData) {
       user.todoCount = await fetchTodosByUserId(user.id);
