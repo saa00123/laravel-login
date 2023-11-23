@@ -1,8 +1,8 @@
 <template>
-  <div>
-    <h1>Admin Dashboard</h1>
-    <div v-for="user in users" :key="user.id">
-      <h2>{{ user.name }}</h2>
+  <div class="max-w-md mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
+    <h1 class="text-4xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
+    <div v-for="user in users" :key="user.id" class="mb-4">
+      <h2 class="text-2xl font-bold text-gray-800">{{ user.name }}</h2>
     </div>
   </div>
 </template>

@@ -10,7 +10,7 @@ class AdminController extends Controller
 {
     public function index()
     {
-        $users = User::all();
+        $users = User::all('name');
         return response()->json($users);
     }
 }

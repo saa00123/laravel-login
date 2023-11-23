@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\TodoController;
 use App\Http\Controllers\AuthController;
-use App\Htpp\Controllers\AdminController;
+use App\Http\Controllers\AdminController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/{user}/todos', [TodoController::class, 'indexForUser']);
@@ -22,7 +22,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
 });
 
-Route::middleware('auth:api', 'is_admin')->group(function () {
-    Route::get('/admin/users', [AdminController::class, 'index']);
-    Route::apiResource('admin/todos', AdminController::class);
+Route::middleware(['auth:api', 'is_admin'])->group(function () {
+    Route::get('/admin', [AdminController::class, 'index']);
 });
