@@ -8,6 +8,7 @@
     >
       <h2 class="text-2xl font-bold text-gray-800">
         <router-link :to="`/${user.id}/todos`">{{ user.name }}</router-link>
+        <span class="ml-4">({{ user.todoCount }} Todos)</span>
       </h2>
     </div>
   </div>
@@ -21,10 +22,26 @@ import { useRouter } from "vue-router";
 const users = ref([]);
 const router = useRouter();
 
+const fetchTodosByUserId = async (userId) => {
+  try {
+    const response = await axios.get(`/api/user/${userId}/todos`);
+    return response.data.length;
+  } catch (error) {
+    console.error(error);
+    return 0;
+  }
+};
+
 const fetchUsers = async () => {
   try {
     const response = await axios.get("/api/admin");
-    users.value = response.data;
+    const usersData = response.data;
+
+    for (const user of usersData) {
+      user.todoCount = await fetchTodosByUserId(user.id);
+    }
+
+    users.value = usersData;
   } catch (error) {
     console.error(error);
   }
