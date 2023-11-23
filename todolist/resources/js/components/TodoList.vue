@@ -1,6 +1,9 @@
 <template>
   <div class="max-w-md mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
     <h1 class="text-4xl font-bold text-gray-800 mb-6">Todo List</h1>
+    <button @click="logout" class="border-2 rounded-lg p-1 w-full mb-6">
+      Logout
+    </button>
     <div class="flex items-center mb-4">
       <input
         type="text"
@@ -49,111 +52,98 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
+import { VueCookieNext } from "vue-cookie-next";
 
-export default {
-  setup() {
-    const todos = ref([]);
-    const newTodo = ref("");
-    const router = useRouter();
+const todos = ref([]);
+const newTodo = ref("");
+const router = useRouter();
 
-    const props = defineProps({
-      userId: {
-        type: Number,
-        required: true,
-        default: 0,
-        validator: (value) => !isNaN(parseInt(value)),
-      },
-    });
-
-    const fetchTodos = async () => {
-      try {
-        const response = await axios.get(`/api/user/${props.userId}/todos`);
-        todos.value = response.data;
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const addTodo = async () => {
-      if (newTodo.value.trim()) {
-        try {
-          const response = await axios.post(`/api/user/${props.userId}/todos`, {
-            title: newTodo.value,
-          });
-          todos.value.push(response.data);
-          newTodo.value = "";
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    };
-
-    const updateTodo = async (todo) => {
-      try {
-        await axios.put(`/api/user/${props.userId}/todos/${todo.id}`, {
-          completed: todo.completed,
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const editTodo = (todo) => {
-      todo.editing = true;
-      todo.updatedTitle = todo.title;
-    };
-
-    const saveUpdatedTodo = async (todo) => {
-      if (todo.updatedTitle.trim()) {
-        try {
-          await axios.put(`/api/user/${props.userId}/todos/${todo.id}`, {
-            title: todo.updatedTitle,
-            completed: todo.completed,
-          });
-          todo.title = todo.updatedTitle;
-          todo.editing = false;
-        } catch (error) {
-          console.error(error);
-        }
-      } else {
-        todo.editing = false;
-      }
-    };
-
-    const deleteTodo = async (todo) => {
-      try {
-        await axios.delete(`/api/user/${props.userId}/todos/${todo.id}`);
-        todos.value = todos.value.filter((t) => t.id !== todo.id);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const logout = async () => {
-      try {
-        await axios.post("/api/logout");
-        router.push("/");
-      } catch (error) {
-        console.error("Logout failed:", error);
-      }
-    };
-
-    onMounted(fetchTodos);
-
-    return {
-      todos,
-      newTodo,
-      addTodo,
-      updateTodo,
-      editTodo,
-      saveUpdatedTodo,
-      deleteTodo,
-      logout,
-    };
+const props = defineProps({
+  userId: {
+    type: Number,
+    required: true,
+    default: 0,
+    validator: (value) => !isNaN(parseInt(value)),
   },
+});
+
+const fetchTodos = async () => {
+  try {
+    const response = await axios.get(`/api/user/${props.userId}/todos`);
+    todos.value = response.data;
+  } catch (error) {
+    console.error(error);
+  }
 };
+
+const addTodo = async () => {
+  if (newTodo.value.trim()) {
+    try {
+      const response = await axios.post(`/api/user/${props.userId}/todos`, {
+        title: newTodo.value,
+      });
+      todos.value.push(response.data);
+      newTodo.value = "";
+    } catch (error) {
+      console.error(error);
+    }
+  }
+};
+
+const updateTodo = async (todo) => {
+  try {
+    await axios.put(`/api/user/${props.userId}/todos/${todo.id}`, {
+      completed: todo.completed,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const editTodo = (todo) => {
+  todo.editing = true;
+  todo.updatedTitle = todo.title;
+};
+
+const saveUpdatedTodo = async (todo) => {
+  if (todo.updatedTitle.trim()) {
+    try {
+      await axios.put(`/api/user/${props.userId}/todos/${todo.id}`, {
+        title: todo.updatedTitle,
+        completed: todo.completed,
+      });
+      todo.title = todo.updatedTitle;
+      todo.editing = false;
+    } catch (error) {
+      console.error(error);
+    }
+  } else {
+    todo.editing = false;
+  }
+};
+
+const deleteTodo = async (todo) => {
+  try {
+    await axios.delete(`/api/user/${props.userId}/todos/${todo.id}`);
+    todos.value = todos.value.filter((t) => t.id !== todo.id);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const logout = async () => {
+  try {
+    VueCookieNext.removeCookie("token");
+    await axios.post("/api/logout");
+    router.push("/");
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+};
+
+onMounted(fetchTodos);
 </script>

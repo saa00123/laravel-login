@@ -31,6 +31,7 @@ import axios from "axios";
 import { reactive, toRefs } from "vue";
 import { useRouter } from "vue-router";
 import { store } from "../store";
+import { VueCookieNext } from "vue-cookie-next";
 
 export default {
   setup() {
@@ -45,7 +46,10 @@ export default {
       try {
         const response = await axios.post("/api/login", loginForm);
         if (response.data.access_token) {
-          localStorage.setItem("token", response.data.access_token);
+          VueCookieNext.setCookie("token", response.data.access_token, {
+            expires: "1d",
+          });
+
           axios.defaults.headers.common[
             "Authorization"
           ] = `Bearer ${response.data.access_token}`;
