@@ -29,37 +29,26 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import axios from "axios";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
-export default {
-  setup() {
-    const router = useRouter();
-    const name = ref("");
-    const email = ref("");
-    const password = ref("");
+const router = useRouter();
+const name = ref("");
+const email = ref("");
+const password = ref("");
 
-    const register = async () => {
-      try {
-        const response = await axios.post("/api/register", {
-          name: name.value,
-          email: email.value,
-          password: password.value,
-        });
-        router.push("/");
-      } catch (error) {
-        console.error("Registration failed:", error);
-      }
-    };
-
-    return {
-      name,
-      email,
-      password,
-      register,
-    };
-  },
+const register = async () => {
+  try {
+    const response = await axios.post("/api/register", {
+      name: name.value,
+      email: email.value,
+      password: password.value,
+    });
+    router.push("/");
+  } catch (error) {
+    console.error("Registration failed:", error);
+  }
 };
 </script>
