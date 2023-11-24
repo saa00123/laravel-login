@@ -7,10 +7,11 @@
     <div
       v-for="user in users"
       :key="user.id"
-      class="border-2 rounded-lg p-1 mb-4"
+      class="border-2 rounded-lg p-1 mb-4 cursor-pointer"
+      @click="navigateToUserTodos(user.id)"
     >
       <h2 class="text-2xl font-bold text-gray-800">
-        <router-link :to="`/${user.id}/todos`">{{ user.name }}</router-link>
+        {{ user.name }}
         <span class="ml-4">({{ user.todoCount }} Todos)</span>
       </h2>
     </div>
@@ -60,6 +61,10 @@ const fetchUsers = async () => {
   } catch (error) {
     console.error(error);
   }
+};
+
+const navigateToUserTodos = (userId) => {
+  router.push(`/${userId}/todos`);
 };
 
 const logout = async () => {
