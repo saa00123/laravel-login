@@ -17,12 +17,12 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
-import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
 
+// 사용자 목록을 위한 반응형 참조
 const users = ref([]);
-const router = useRouter();
 
+// 특정 사용자 ID에 대한 할 일 수를 가져오는 함수
 const fetchTodosByUserId = async (userId) => {
   try {
     const response = await axios.get(`/api/user/${userId}/todos`);
@@ -38,12 +38,16 @@ const fetchUsers = async () => {
     const response = await axios.get("/api/admin");
     let usersData = response.data;
 
-    const loggedInAdminId =
-      VueCookieNext.getCookie("isAdmin") === "true"
-        ? parseInt(VueCookieNext.getCookie("adminId"))
-        : null;
+    const isAdmin = VueCookieNext.getCookie("isAdmin") === "true";
+    const adminId = isAdmin
+      ? parseInt(VueCookieNext.getCookie("adminId"))
+      : null;
 
-    usersData = usersData.filter((user) => user.name.toLowerCase() !== "admin");
+    usersData = usersData.filter((user) => {
+      return (
+        user.name.toLowerCase() !== "admin" && (!isAdmin || user.id !== adminId)
+      );
+    });
 
     for (const user of usersData) {
       user.todoCount = await fetchTodosByUserId(user.id);
