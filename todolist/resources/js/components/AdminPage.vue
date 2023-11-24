@@ -1,6 +1,9 @@
 <template>
   <div class="max-w-md mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
     <h1 class="text-4xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
+    <button @click="logout" class="border-2 rounded-lg p-1 w-full mb-6">
+      Logout
+    </button>
     <div
       v-for="user in users"
       :key="user.id"
@@ -17,12 +20,12 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
+import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
 
-// 사용자 목록을 위한 반응형 참조
 const users = ref([]);
+const router = useRouter();
 
-// 특정 사용자 ID에 대한 할 일 수를 가져오는 함수
 const fetchTodosByUserId = async (userId) => {
   try {
     const response = await axios.get(`/api/user/${userId}/todos`);
@@ -56,6 +59,16 @@ const fetchUsers = async () => {
     users.value = usersData;
   } catch (error) {
     console.error(error);
+  }
+};
+
+const logout = async () => {
+  try {
+    VueCookieNext.removeCookie("token");
+    await axios.post("/api/logout");
+    router.push("/");
+  } catch (error) {
+    console.error("Logout failed:", error);
   }
 };
 
