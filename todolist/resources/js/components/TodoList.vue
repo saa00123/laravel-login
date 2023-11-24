@@ -11,7 +11,7 @@
     >
       Go to Admin Dashboard
     </button>
-    <div class="flex items-center mb-4">
+    <div v-if="isCrudAllowed" class="flex items-center mb-4">
       <input
         type="text"
         class="border-2 rounded-lg p-1 w-full mr-2"
@@ -27,11 +27,12 @@
         v-for="todo in todos"
         :key="todo.id"
         :class="{ 'line-through text-gray-500': todo.completed }"
-        class="flex border-2 rounded-lg items-center justify-between p-3 border rounded"
+        class="flex border-2 rounded-lg items-center justify-between p-3"
       >
         <div class="flex items-center">
           <input
             type="checkbox"
+            v-if="isCrudAllowed"
             v-model="todo.completed"
             @change="updateTodo(todo)"
             class="mr-3"
@@ -46,7 +47,7 @@
             class="border-2 rounded-lg p-1"
           />
         </div>
-        <div class="flex space-x-2">
+        <div class="flex space-x-2" v-if="isCrudAllowed">
           <button @click="editTodo(todo)" class="border-2 rounded-lg p-1">
             Edit
           </button>
@@ -88,7 +89,7 @@ const fetchTodos = async () => {
 };
 
 const addTodo = async () => {
-  if (newTodo.value.trim()) {
+  if (newTodo.value.trim() && isCrudAllowed.value) {
     try {
       const response = await axios.post(`/api/user/${props.userId}/todos`, {
         title: newTodo.value,
@@ -102,22 +103,26 @@ const addTodo = async () => {
 };
 
 const updateTodo = async (todo) => {
-  try {
-    await axios.put(`/api/user/${props.userId}/todos/${todo.id}`, {
-      completed: todo.completed,
-    });
-  } catch (error) {
-    console.error(error);
+  if (isCrudAllowed.value) {
+    try {
+      await axios.put(`/api/user/${props.userId}/todos/${todo.id}`, {
+        completed: todo.completed,
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 };
 
 const editTodo = (todo) => {
-  todo.editing = true;
-  todo.updatedTitle = todo.title;
+  if (isCrudAllowed.value) {
+    todo.editing = true;
+    todo.updatedTitle = todo.title;
+  }
 };
 
 const saveUpdatedTodo = async (todo) => {
-  if (todo.updatedTitle.trim()) {
+  if (todo.updatedTitle.trim() && isCrudAllowed.value) {
     try {
       await axios.put(`/api/user/${props.userId}/todos/${todo.id}`, {
         title: todo.updatedTitle,
@@ -134,11 +139,13 @@ const saveUpdatedTodo = async (todo) => {
 };
 
 const deleteTodo = async (todo) => {
-  try {
-    await axios.delete(`/api/user/${props.userId}/todos/${todo.id}`);
-    todos.value = todos.value.filter((t) => t.id !== todo.id);
-  } catch (error) {
-    console.error(error);
+  if (isCrudAllowed.value) {
+    try {
+      await axios.delete(`/api/user/${props.userId}/todos/${todo.id}`);
+      todos.value = todos.value.filter((t) => t.id !== todo.id);
+    } catch (error) {
+      console.error(error);
+    }
   }
 };
 
@@ -155,6 +162,10 @@ const logout = async () => {
 const isAdmin = computed(() => {
   const adminCookie = VueCookieNext.getCookie("isAdmin");
   return adminCookie === "true";
+});
+
+const isCrudAllowed = computed(() => {
+  return true;
 });
 
 const goToAdminDashboard = () => {

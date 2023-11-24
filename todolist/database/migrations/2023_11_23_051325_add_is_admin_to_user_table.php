@@ -8,19 +8,26 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::table('user', function (Blueprint $table) {
-            if (!Schema::hasColumn('user', 'is_admin')) {
+        Schema::table('users', function (Blueprint $table) {
+            if (!Schema::hasColumn('users', 'is_admin')) {
                 $table->boolean('is_admin')->default(false);
+            }
+            if (!Schema::hasColumn('users', 'is_crud_allowed')) {
+                $table->boolean('is_crud_allowed')->default(false);
             }
         });
     }
     
     public function down()
     {
-        Schema::table('user', function (Blueprint $table) {
-            if (Schema::hasColumn('user', 'is_admin')) {
+        Schema::table('users', function (Blueprint $table) {
+            if (Schema::hasColumn('users', 'is_admin')) {
                 $table->dropColumn('is_admin');
+            }
+            if (Schema::hasColumn('users', 'is_crud_allowed')) {
+                $table->dropColumn('is_crud_allowed');
             }
         });
     }
+    
 };
