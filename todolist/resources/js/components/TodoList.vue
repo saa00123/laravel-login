@@ -175,12 +175,3 @@ const goToAdminDashboard = () => {
 
 onMounted(fetchTodos);
 </script>
-
-<style>
-.green-border {
-  border: 2px solid green;
-}
-.red-border {
-  border: 2px solid red;
-}
-</style>

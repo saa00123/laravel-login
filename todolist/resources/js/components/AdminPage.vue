@@ -4,7 +4,11 @@
     <button @click="logout" class="border-2 rounded-lg p-1 w-full mb-6">
       Logout
     </button>
-    <div v-for="user in users" :key="user.id" class="user-entry mb-4">
+    <div
+      v-for="user in users"
+      :key="user.id"
+      class="user-entry mb-4 border-2 rounded-lg p-1 w-full mb-6"
+    >
       <div class="user-info">
         <h2 class="text-2xl font-bold text-gray-800">
           <router-link :to="`/${user.id}/todos`">{{ user.name }}</router-link>
