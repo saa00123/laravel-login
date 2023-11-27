@@ -16,7 +16,6 @@ class AdminController extends Controller
 
     public function toggleCrudPermission(Request $request, User $user)
 {
-    $user->is_crud_allowed = !$user->is_crud_allowed;
     $user->save();
 
     return response()->json(['success' => true]);

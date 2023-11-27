@@ -14,9 +14,6 @@
         {{ user.name }}
         <span class="ml-4">({{ user.todoCount }} Todos)</span>
       </h2>
-      <button @click="toggleCrudPermission(user)">
-        {{ user.is_crud_allowed ? "Revoke CRUD" : "Grant CRUD" }}
-      </button>
     </div>
   </div>
 </template>

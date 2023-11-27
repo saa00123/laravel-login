@@ -24,5 +24,4 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::middleware(['auth:api', 'is_admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index']);
-    Route::post('/admin/users/{user}/toggle-crud', [AdminController::class, 'toggleCrudPermission']);
 });

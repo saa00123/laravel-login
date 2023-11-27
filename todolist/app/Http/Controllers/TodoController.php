@@ -32,10 +32,6 @@ class TodoController extends Controller
             return response()->json(['error' => 'User not found'], 404);
         }
 
-        if (!$user->is_crud_allowed) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
         $todo = new Todo($request->all());
         $todo->user_id = $userId; 
         $user->todos()->save($todo);
@@ -49,11 +45,6 @@ class TodoController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $user = User::find($userId);
-        if (!$user || !$user->is_crud_allowed) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
         $todo->update($request->all());
         return $todo;
     }
@@ -61,11 +52,6 @@ class TodoController extends Controller
     public function destroy($userId, Todo $todo)
     {
         if ($todo->user_id != $userId) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        $user = User::find($userId);
-        if (!$user || !$user->is_crud_allowed) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 

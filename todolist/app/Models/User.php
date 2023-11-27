@@ -44,7 +44,6 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_admin'=> 'boolean',
-        'is_crud_allowed' => 'boolean',
     ];
 
     public function todos()
