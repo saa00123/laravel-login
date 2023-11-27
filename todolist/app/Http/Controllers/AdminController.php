@@ -15,9 +15,22 @@ class AdminController extends Controller
     }
 
     public function toggleCrudPermission(Request $request, User $user)
-{
-    $user->save();
+    {
+        $user->save();
 
-    return response()->json(['success' => true]);
-}
+        return response()->json(['success' => true]);
+    }
+
+    public function updateCrudPermission(Request $request, $userId)
+    {
+        $user = User::find($userId);
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+    
+        $user->fill($request->only(['create_allowed', 'update_allowed', 'delete_allowed']));
+        $user->save();
+    
+        return response()->json($user);
+    }
 }

@@ -11,7 +11,7 @@
     >
       Go to Admin Dashboard
     </button>
-    <div class="flex items-center mb-4">
+    <div v-if="canCreate" class="flex items-center mb-4">
       <input
         type="text"
         class="border-2 rounded-lg p-1 w-full mr-2"
@@ -21,7 +21,6 @@
       />
       <button class="border-2 rounded-lg p-1" @click="addTodo">Add</button>
     </div>
-
     <ul class="space-y-3">
       <li
         v-for="todo in todos"
@@ -47,10 +46,18 @@
           />
         </div>
         <div class="flex space-x-2">
-          <button @click="editTodo(todo)" class="border-2 rounded-lg p-1">
+          <button
+            v-if="canUpdate"
+            @click="editTodo(todo)"
+            class="border-2 rounded-lg p-1"
+          >
             Edit
           </button>
-          <button @click="deleteTodo(todo)" class="border-2 rounded-lg p-1">
+          <button
+            v-if="canDelete"
+            @click="deleteTodo(todo)"
+            class="border-2 rounded-lg p-1"
+          >
             Delete
           </button>
         </div>
@@ -68,6 +75,11 @@ import { VueCookieNext } from "vue-cookie-next";
 const todos = ref([]);
 const newTodo = ref("");
 const router = useRouter();
+const userPermissions = ref({
+  create_allowed: true,
+  update_allowed: true,
+  delete_allowed: true,
+});
 
 const props = defineProps({
   userId: {
@@ -88,6 +100,7 @@ const fetchTodos = async () => {
 };
 
 const addTodo = async () => {
+  if (!userPermissions.value.create_allowed) return;
   try {
     const response = await axios.post(`/api/user/${props.userId}/todos`, {
       title: newTodo.value,
@@ -100,6 +113,7 @@ const addTodo = async () => {
 };
 
 const updateTodo = async (todo) => {
+  if (!userPermissions.value.update_allowed) return;
   try {
     await axios.put(`/api/user/${props.userId}/todos/${todo.id}`, {
       completed: todo.completed,
@@ -110,11 +124,13 @@ const updateTodo = async (todo) => {
 };
 
 const editTodo = (todo) => {
+  if (!userPermissions.value.update_allowed) return;
   todo.editing = true;
   todo.updatedTitle = todo.title;
 };
 
 const saveUpdatedTodo = async (todo) => {
+  if (!userPermissions.value.update_allowed) return;
   try {
     await axios.put(`/api/user/${props.userId}/todos/${todo.id}`, {
       title: todo.updatedTitle,
@@ -128,6 +144,7 @@ const saveUpdatedTodo = async (todo) => {
 };
 
 const deleteTodo = async (todo) => {
+  if (!userPermissions.value.delete_allowed) return;
   try {
     await axios.delete(`/api/user/${props.userId}/todos/${todo.id}`);
     todos.value = todos.value.filter((t) => t.id !== todo.id);
@@ -157,3 +174,12 @@ const goToAdminDashboard = () => {
 
 onMounted(fetchTodos);
 </script>
+
+<style>
+.green-border {
+  border: 2px solid green;
+}
+.red-border {
+  border: 2px solid red;
+}
+</style>

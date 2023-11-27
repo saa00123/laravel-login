@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
 });
 
-Route::middleware(['auth:api', 'is_admin'])->group(function () {
+Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index']);
+    Route::put('/admin/update-crud-permission/{user}', [AdminController::class, 'updateCrudPermission']);
 });

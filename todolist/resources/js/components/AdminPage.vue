@@ -4,16 +4,33 @@
     <button @click="logout" class="border-2 rounded-lg p-1 w-full mb-6">
       Logout
     </button>
-    <div
-      v-for="user in users"
-      :key="user.id"
-      class="border-2 rounded-lg p-1 mb-4 cursor-pointer"
-      @click="navigateToUserTodos(user.id)"
-    >
-      <h2 class="text-2xl font-bold text-gray-800">
-        {{ user.name }}
-        <span class="ml-4">({{ user.todoCount }} Todos)</span>
-      </h2>
+    <div v-for="user in users" :key="user.id" class="user-entry">
+      <div class="user-info">
+        <h2 class="text-2xl font-bold text-gray-800">
+          <router-link :to="`/${user.id}/todos`">{{ user.name }}</router-link>
+          <span class="ml-4">({{ user.todoCount }} Todos)</span>
+        </h2>
+      </div>
+      <div class="crud-buttons">
+        <button
+          :class="buttonClass(user.create_allowed)"
+          @click.prevent="togglePermission(user, 'create')"
+        >
+          Create
+        </button>
+        <button
+          :class="buttonClass(user.update_allowed)"
+          @click.prevent="togglePermission(user, 'update')"
+        >
+          Update
+        </button>
+        <button
+          :class="buttonClass(user.delete_allowed)"
+          @click.prevent="togglePermission(user, 'delete')"
+        >
+          Delete
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -40,31 +57,21 @@ const fetchTodosByUserId = async (userId) => {
 const fetchUsers = async () => {
   try {
     const response = await axios.get("/api/admin");
-    let usersData = response.data;
-
-    const isAdmin = VueCookieNext.getCookie("isAdmin") === "true";
-    const adminId = isAdmin
-      ? parseInt(VueCookieNext.getCookie("adminId"))
-      : null;
-
-    usersData = usersData.filter((user) => {
-      return (
-        user.name.toLowerCase() !== "admin" && (!isAdmin || user.id !== adminId)
-      );
-    });
-
-    for (const user of usersData) {
-      user.todoCount = await fetchTodosByUserId(user.id);
-    }
-
-    users.value = usersData;
+    users.value = response.data.filter((user) => !user.is_admin);
   } catch (error) {
     console.error(error);
   }
 };
 
-const navigateToUserTodos = (userId) => {
-  router.push(`/${userId}/todos`);
+const togglePermission = async (user, permissionType) => {
+  user[`${permissionType}_allowed`] = !user[`${permissionType}_allowed`];
+  try {
+    await axios.put(`/api/admin/update-crud-permission/${user.id}`, {
+      [`${permissionType}_allowed`]: user[`${permissionType}_allowed`],
+    });
+  } catch (error) {
+    console.error("Error toggling permission:", error);
+  }
 };
 
 const logout = async () => {
@@ -77,5 +84,19 @@ const logout = async () => {
   }
 };
 
+const buttonClass = (allowed) => ({
+  "green-border": allowed,
+  "red-border": !allowed,
+});
+
 onMounted(fetchUsers);
 </script>
+
+<style>
+.green-border {
+  border: 2px solid green;
+}
+.red-border {
+  border: 2px solid red;
+}
+</style>
