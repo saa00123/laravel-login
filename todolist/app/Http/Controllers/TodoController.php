@@ -53,32 +53,26 @@ class TodoController extends Controller
         return $todo;
     }
 
-    public function update(Request $request, $userId, Todo $todo)
+    public function update(Request $request, $userId, $todoId)
     {
-        if ($todo->user_id != $userId) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        try {
+            $todo = Todo::where('user_id', $userId)->where('id', $todoId)->firstOrFail();
+            $todo->update($request->all());
+            return response()->json($todo);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        if (!$user->update_allowed) {
-            return response()->json(['error' => 'Action not allowed'], 401);
-        }
-
-        $todo->update($request->all());
-        return $todo;
     }
-
-    public function destroy($userId, Todo $todo)
+    
+    public function destroy($userId, $todoId)
     {
-        if ($todo->user_id != $userId) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        try {
+            $todo = Todo::where('user_id', $userId)->where('id', $todoId)->firstOrFail();
+            $todo->delete();
+            return response()->json(null, 204);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        if (!$user->delete_allowed) {
-            return response()->json(['error' => 'Action not allowed'], 401);
-        }
-
-        $todo->delete();
-        return response()->json(null, 204);
     }
 }
 
