@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -14,11 +13,6 @@ class User extends Authenticatable
 
     protected $table = 'user';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -29,27 +23,20 @@ class User extends Authenticatable
         'delete_allowed',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'is_admin'=> 'boolean',
-        'create_allowed' => 'boolean',
-        'update_allowed' => 'boolean',
-        'delete_allowed' => 'boolean',
+        'is_admin' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'create_allowed' => true,
+        'update_allowed' => true,
+        'delete_allowed' => true,
     ];
 
     public function todos()

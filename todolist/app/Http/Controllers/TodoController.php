@@ -17,12 +17,21 @@ class TodoController extends Controller
             if (!$user) {
                 return response()->json(['error' => 'User not found'], 404);
             }
-            return $user->todos;
+
+            $permissions = [
+                'create_allowed' => $user->create_allowed,
+                'update_allowed' => $user->update_allowed,
+                'delete_allowed' => $user->delete_allowed,
+            ];
+
+            return response()->json([
+                'todos' => $user->todos,
+                'permissions' => $permissions
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    
 
     public function storeForUser(Request $request, $userId)
     {
@@ -30,6 +39,11 @@ class TodoController extends Controller
 
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
+        }
+
+
+        if (!$user->create_allowed) {
+            return response()->json(['error' => 'Action not allowed'], 401);
         }
 
         $todo = new Todo($request->all());
@@ -45,6 +59,10 @@ class TodoController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
+        if (!$user->update_allowed) {
+            return response()->json(['error' => 'Action not allowed'], 401);
+        }
+
         $todo->update($request->all());
         return $todo;
     }
@@ -53,6 +71,10 @@ class TodoController extends Controller
     {
         if ($todo->user_id != $userId) {
             return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        if (!$user->delete_allowed) {
+            return response()->json(['error' => 'Action not allowed'], 401);
         }
 
         $todo->delete();

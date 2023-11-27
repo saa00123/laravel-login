@@ -10,27 +10,29 @@ class AdminController extends Controller
 {
     public function index()
     {
-        $users = User::all(['id', 'name']);
+        $users = User::withCount('todos')->get(['id', 'name', 'todos_count']);
+
         return response()->json($users);
     }
-
     public function toggleCrudPermission(Request $request, User $user)
     {
         $user->save();
 
         return response()->json(['success' => true]);
     }
-
-    public function updateCrudPermission(Request $request, $userId)
+    
+    public function updatePermissions(Request $request, $userId)
     {
         $user = User::find($userId);
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
         }
-    
-        $user->fill($request->only(['create_allowed', 'update_allowed', 'delete_allowed']));
+
+        $user->create_allowed = $request->input('create_allowed', $user->create_allowed);
+        $user->update_allowed = $request->input('update_allowed', $user->update_allowed);
+        $user->delete_allowed = $request->input('delete_allowed', $user->delete_allowed);
         $user->save();
-    
-        return response()->json($user);
+
+        return response()->json(['success' => true]);
     }
 }

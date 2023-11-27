@@ -11,7 +11,7 @@
     >
       Go to Admin Dashboard
     </button>
-    <div v-if="canCreate" class="flex items-center mb-4">
+    <div v-if="userPermissions.create_allowed" class="flex items-center mb-4">
       <input
         type="text"
         class="border-2 rounded-lg p-1 w-full mr-2"
@@ -47,14 +47,14 @@
         </div>
         <div class="flex space-x-2">
           <button
-            v-if="canUpdate"
+            v-if="userPermissions.update_allowed"
             @click="editTodo(todo)"
             class="border-2 rounded-lg p-1"
           >
             Edit
           </button>
           <button
-            v-if="canDelete"
+            v-if="userPermissions.delete_allowed"
             @click="deleteTodo(todo)"
             class="border-2 rounded-lg p-1"
           >
@@ -76,9 +76,9 @@ const todos = ref([]);
 const newTodo = ref("");
 const router = useRouter();
 const userPermissions = ref({
-  create_allowed: true,
-  update_allowed: true,
-  delete_allowed: true,
+  create_allowed: false,
+  update_allowed: false,
+  delete_allowed: false,
 });
 
 const props = defineProps({
@@ -93,7 +93,8 @@ const props = defineProps({
 const fetchTodos = async () => {
   try {
     const response = await axios.get(`/api/user/${props.userId}/todos`);
-    todos.value = response.data;
+    todos.value = response.data.todos;
+    Object.assign(userPermissions.value, response.data.permissions);
   } catch (error) {
     console.error(error);
   }
