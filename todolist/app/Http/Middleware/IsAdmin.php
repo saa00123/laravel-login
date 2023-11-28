@@ -10,6 +10,10 @@ class IsAdmin
 {
     public function handle(Request $request, Closure $next)
     {
+        if (!Auth::check()){
+            return response()->json(['error' => 'Unauthorized'],401);
+        }
+        
         if (!Auth::check() || !Auth::user()->is_admin) {
 
             return response()->json(['message' => 'Access Denied'], 403);
