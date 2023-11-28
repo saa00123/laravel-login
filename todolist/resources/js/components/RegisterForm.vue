@@ -77,6 +77,8 @@ const register = async () => {
       errorMessages.name = error.response.data.errors.name || null;
       errorMessages.email = error.response.data.errors.email || null;
       errorMessages.password = error.response.data.errors.password || null;
+    } else if (error.response && error.response.data.message) {
+      console.error("Registration failed:", error.response.data.message);
     } else {
       console.error("Registration failed:", error);
     }
