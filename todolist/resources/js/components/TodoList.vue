@@ -21,6 +21,9 @@
       />
       <button class="border-2 rounded-lg p-1" @click="addTodo">Add</button>
     </div>
+    <div v-if="errorMessages.addTodo" class="text-red-500">
+      {{ errorMessages.addTodo }}
+    </div>
     <ul class="space-y-3">
       <li
         v-for="todo in todos"
@@ -80,6 +83,7 @@ const userPermissions = ref({
   update_allowed: false,
   delete_allowed: false,
 });
+const errorMessages = ref({ addTodo: null });
 
 const props = defineProps({
   userId: {
@@ -102,14 +106,22 @@ const fetchTodos = async () => {
 
 const addTodo = async () => {
   if (!userPermissions.value.create_allowed) return;
+
+  if (!newTodo.value.trim()) {
+    errorMessages.value.addTodo = "Please enter a todo item";
+    return;
+  }
+
   try {
     const response = await axios.post(`/api/user/${props.userId}/todos`, {
       title: newTodo.value,
     });
     todos.value.push(response.data);
     newTodo.value = "";
+    errorMessages.value.addTodo = null;
   } catch (error) {
     console.error(error);
+    errorMessages.value.addTodo = "Error adding todo";
   }
 };
 
