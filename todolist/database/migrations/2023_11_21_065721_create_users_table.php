@@ -18,7 +18,8 @@ class CreateUsersTable extends Migration
             $table->boolean('is_admin')->default(false); 
             $table->boolean('create_allowed')->default(true);
             $table->boolean('update_allowed')->default(true); 
-            $table->boolean('delete_allowed')->default(true); 
+            $table->boolean('delete_allowed')->default(true);
+            $table->boolean('is_online')->default(false); 
             $table->timestamps();
         });
     }

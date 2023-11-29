@@ -12,7 +12,15 @@
       <div class="user-info">
         <h2 class="text-2xl font-bold text-gray-800">
           <router-link :to="`/${user.id}/todos`">{{ user.name }}</router-link>
-          <span class="ml-4">({{ user.todoCount }} Todos)</span>
+          <span class="ml-4 mr-4">({{ user.todoCount }} Todos)</span>
+          <span
+            :class="{
+              'text-green-500': user.is_online,
+              'text-red-500': !user.is_online,
+            }"
+          >
+            {{ user.is_online ? "Online" : "Offline" }}
+          </span>
         </h2>
       </div>
       <div class="crud-buttons flex space-x-2 mt-2">

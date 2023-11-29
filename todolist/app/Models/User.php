@@ -21,6 +21,7 @@ class User extends Authenticatable
         'create_allowed',
         'update_allowed',
         'delete_allowed',
+        'is_online',
     ];
 
     protected $hidden = [
@@ -31,6 +32,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_admin' => 'boolean',
+        'is_online' => 'boolean',
     ];
 
     protected $attributes = [

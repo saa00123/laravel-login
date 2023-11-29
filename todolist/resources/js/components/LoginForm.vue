@@ -71,17 +71,22 @@ const login = async () => {
     axios.defaults.headers.common[
       "Authorization"
     ] = `Bearer ${response.data.access_token}`;
-    VueCookieNext.setCookie(
-      "isAdmin",
-      response.data.user.is_admin ? "true" : "false",
-      { expires: "1d" },
-    );
 
+    const user = response.data.user;
+    VueCookieNext.setCookie("isAdmin", user.is_admin ? "true" : "false", {
+      expires: "1d",
+    });
     if (response.data.user.is_admin) {
       router.push("/admin");
     } else {
       const userId = response.data.user.id;
       router.push(`/${userId}/todos`);
+    }
+
+    if (user.is_admin) {
+      router.push("/admin");
+    } else {
+      router.push(`/${user.id}/todos`);
     }
 
     store.user = { ...response.data.user, registered: true };
