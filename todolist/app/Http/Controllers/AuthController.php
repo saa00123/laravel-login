@@ -54,6 +54,11 @@ class AuthController extends Controller
         return response()->json(['access_token' => $token, 'user' => $user]);
     }
 
+        public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
     public function logout(Request $request)
     {
         $user = Auth::user();

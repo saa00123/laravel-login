@@ -24,6 +24,6 @@ class UserOnlineStatusChanged implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new PresenceChannel('users');
+        return new PresenceChannel('user');
     }
 }

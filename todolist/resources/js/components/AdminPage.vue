@@ -52,7 +52,6 @@ import { ref, onMounted, onUnmounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
-import { store } from "../store";
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
 
@@ -121,14 +120,15 @@ const buttonClass = (allowed) => ({
 });
 
 const subscribeToUserUpdates = () => {
+  window.Pusher = Pusher;
   window.Echo = new Echo({
     broadcaster: "pusher",
     key: "d530c4d0851df35c4452",
     cluster: "ap3",
-    encrypted: true,
+    forceTLS: true,
   });
 
-  window.Echo.join("users")
+  window.Echo.join("user")
     .here((usersList) => {
       users.value = usersList;
     })
