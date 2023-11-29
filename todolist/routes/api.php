@@ -2,10 +2,13 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Broadcast;
 
 use App\Http\Controllers\TodoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
+
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/{user}/todos', [TodoController::class, 'indexForUser']);

@@ -48,13 +48,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
+import { store } from "../store";
+import Echo from "laravel-echo";
+import Pusher from "pusher-js";
 
 const users = ref([]);
 const router = useRouter();
+const loading = ref(true);
 
 const fetchUsers = async () => {
   try {
@@ -95,8 +99,14 @@ const togglePermission = async (user, permissionType) => {
 
 const logout = async () => {
   try {
-    VueCookieNext.removeCookie("token");
+    const token = VueCookieNext.getCookie("token");
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
+
     await axios.post("/api/logout");
+    VueCookieNext.removeCookie("token");
+    VueCookieNext.removeCookie("isAdmin");
     router.push("/");
   } catch (error) {
     console.error("Logout failed:", error);
@@ -110,5 +120,54 @@ const buttonClass = (allowed) => ({
     !allowed,
 });
 
-onMounted(fetchUsers);
+const subscribeToUserUpdates = () => {
+  window.Echo = new Echo({
+    broadcaster: "pusher",
+    key: "d530c4d0851df35c4452",
+    cluster: "ap3",
+    encrypted: true,
+  });
+
+  window.Echo.join("users")
+    .here((usersList) => {
+      users.value = usersList;
+    })
+    .listen("UserOnlineStatusChanged", (e) => {
+      const updatedUser = e.user;
+      const index = users.value.findIndex((u) => u.id === updatedUser.id);
+      if (index !== -1) {
+        users.value[index] = updatedUser;
+      }
+    });
+};
+
+onMounted(async () => {
+  const token = VueCookieNext.getCookie("token");
+  if (!token) {
+    router.push("/");
+    return;
+  }
+
+  try {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    const response = await axios.get("/api/user");
+
+    if (response.data && response.data.is_admin) {
+      fetchUsers();
+      subscribeToUserUpdates();
+    } else {
+      console.log("Access denied. Admin privileges are required.");
+    }
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+  } finally {
+    loading.value = false;
+  }
+});
+
+onUnmounted(() => {
+  if (window.Echo) {
+    window.Echo.leave("users");
+  }
+});
 </script>

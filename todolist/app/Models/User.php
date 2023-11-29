@@ -45,4 +45,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Todo::class);
     }
+
+    public function setOnline($value)
+    {
+        $this->is_online = $value;
+        $this->save();
+
+        broadcast(new UserOnlineStatusChanged($this))->toOthers();
+    }
 }

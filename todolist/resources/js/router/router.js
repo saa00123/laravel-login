@@ -4,6 +4,7 @@ import RegisterForm from "../components/RegisterForm.vue";
 import TodoList from "../components/TodoList.vue";
 import AdminPage from "../components/AdminPage.vue";
 import { store } from "../store";
+import { VueCookieNext } from "vue-cookie-next";
 
 const routes = [
   { path: "/", component: LoginForm },
@@ -18,7 +19,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const isAdmin = store.user && store.user.is_admin;
+  const isAdmin = VueCookieNext.getCookie("isAdmin") === "true";
 
   if (to.matched.some((record) => record.meta.requiresAdmin) && !isAdmin) {
     next({ path: "/" });

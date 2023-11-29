@@ -168,8 +168,14 @@ const deleteTodo = async (todo) => {
 
 const logout = async () => {
   try {
-    VueCookieNext.removeCookie("token");
+    const token = VueCookieNext.getCookie("token");
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
+
     await axios.post("/api/logout");
+    VueCookieNext.removeCookie("token");
+    VueCookieNext.removeCookie("isAdmin");
     router.push("/");
   } catch (error) {
     console.error("Logout failed:", error);
@@ -185,5 +191,14 @@ const goToAdminDashboard = () => {
   router.push("/admin");
 };
 
-onMounted(fetchTodos);
+onMounted(() => {
+  const token = VueCookieNext.getCookie("token");
+
+  if (token) {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    fetchTodos();
+  } else {
+    router.push("/login");
+  }
+});
 </script>
