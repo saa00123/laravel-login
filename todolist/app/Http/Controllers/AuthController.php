@@ -76,10 +76,11 @@ class AuthController extends Controller
     
             Log::info('Authenticated user ID: ' . $user->id);
     
-            $user->is_online = false;
-            $user->save();
+            $user->update(['is_online' => false]);
     
-            $request->user()->currentAccessToken()->delete();
+            $user->tokens->each(function ($token) {
+                $token->delete();
+            });
     
             return response()->json(['message' => 'Successfully logged out']);
         } catch (\Exception $e) {
