@@ -52,12 +52,12 @@ import { ref, onMounted, onUnmounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
-import Echo from "laravel-echo";
-import Pusher from "pusher-js";
 
 const users = ref([]);
 const router = useRouter();
 const loading = ref(true);
+const pollInterval = 5000; // 5초 간격으로 설정
+let poller = null;
 
 const fetchUsers = async () => {
   try {
@@ -119,26 +119,16 @@ const buttonClass = (allowed) => ({
     !allowed,
 });
 
-const subscribeToUserUpdates = () => {
-  window.Pusher = Pusher;
-  window.Echo = new Echo({
-    broadcaster: "pusher",
-    key: "d530c4d0851df35c4452",
-    cluster: "ap3",
-    forceTLS: true,
-  });
+const startPolling = () => {
+  poller = setInterval(() => {
+    fetchUsers();
+  }, pollInterval);
+};
 
-  window.Echo.join("user")
-    .here((usersList) => {
-      users.value = usersList;
-    })
-    .listen("UserOnlineStatusChanged", (e) => {
-      const updatedUser = e.user;
-      const index = users.value.findIndex((u) => u.id === updatedUser.id);
-      if (index !== -1) {
-        users.value[index] = updatedUser;
-      }
-    });
+const stopPolling = () => {
+  if (poller) {
+    clearInterval(poller);
+  }
 };
 
 onMounted(async () => {
@@ -150,24 +140,16 @@ onMounted(async () => {
 
   try {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    const response = await axios.get("/api/user");
-
-    if (response.data && response.data.is_admin) {
-      fetchUsers();
-      subscribeToUserUpdates();
-    } else {
-      console.log("Access denied. Admin privileges are required.");
-    }
+    fetchUsers();
+    startPolling();
   } catch (error) {
-    console.error("Error fetching user data:", error);
+    console.error("Error during mounting:", error);
   } finally {
     loading.value = false;
   }
 });
 
 onUnmounted(() => {
-  if (window.Echo) {
-    window.Echo.leave("users");
-  }
+  stopPolling();
 });
 </script>

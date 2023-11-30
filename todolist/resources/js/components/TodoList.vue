@@ -198,7 +198,7 @@ onMounted(() => {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     fetchTodos();
   } else {
-    router.push("/login");
+    router.push("/");
   }
 });
 </script>

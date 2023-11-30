@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Todo;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -10,17 +9,12 @@ class AdminController extends Controller
 {
     public function index()
     {
-        $users = User::withCount('todos')->get(['id', 'name', 'todos_count']);
+        $users = User::withCount('todos')
+                     ->get(['id', 'name', 'todos_count', 'is_online']);
 
         return response()->json($users);
     }
-    public function toggleCrudPermission(Request $request, User $user)
-    {
-        $user->save();
 
-        return response()->json(['success' => true]);
-    }
-    
     public function updatePermissions(Request $request, $userId)
     {
         $user = User::find($userId);
