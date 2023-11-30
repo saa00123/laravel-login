@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Auth;
 
 class TodoController extends Controller
 {
+    /**
+     * 특정 사용자의 할 일 목록을 조회하는 메소드
+     * @param int $userId 사용자 ID
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function indexForUser($userId)
     {
         try {
@@ -33,6 +38,12 @@ class TodoController extends Controller
         }
     }
 
+    /**
+     * 특정 사용자에 대한 새로운 할 일을 추가하는 메소드
+     * @param Request $request 요청 데이터
+     * @param int $userId 사용자 ID
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function storeForUser(Request $request, $userId)
     {
         $user = User::find($userId);
@@ -40,7 +51,6 @@ class TodoController extends Controller
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
         }
-
 
         if (!$user->create_allowed) {
             return response()->json(['error' => 'Action not allowed'], 401);
@@ -53,6 +63,13 @@ class TodoController extends Controller
         return $todo;
     }
 
+    /**
+     * 특정 사용자의 특정 할 일을 업데이트하는 메소드
+     * @param Request $request 요청 데이터
+     * @param int $userId 사용자 ID
+     * @param int $todoId 할 일 ID
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function update(Request $request, $userId, $todoId)
     {
         try {
@@ -64,6 +81,12 @@ class TodoController extends Controller
         }
     }
     
+    /**
+     * 특정 사용자의 특정 할 일을 삭제하는 메소드
+     * @param int $userId 사용자 ID
+     * @param int $todoId 할 일 ID
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function destroy($userId, $todoId)
     {
         try {
@@ -75,4 +98,3 @@ class TodoController extends Controller
         }
     }
 }
-

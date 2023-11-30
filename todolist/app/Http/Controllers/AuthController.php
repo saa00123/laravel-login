@@ -9,9 +9,13 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-
 class AuthController extends Controller
 {
+    /**
+     * 사용자 등록(회원가입) 메소드
+     * @param Request $request 요청 데이터
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function register(Request $request)
     {
         $validatedData = $request->validate([
@@ -24,7 +28,6 @@ class AuthController extends Controller
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
             'password' => Hash::make($validatedData['password']),
-
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -32,11 +35,21 @@ class AuthController extends Controller
         return response()->json(['access_token' => $token, 'user' => $user], 201);
     }
 
+    /**
+     * 현재 인증된 사용자 정보 조회 메소드
+     * @param Request $request 요청 데이터
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function user(Request $request)
     {
         return $request->user();
     }
 
+    /**
+     * 로그인 메소드
+     * @param Request $request 요청 데이터
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function login(Request $request)
     {
         try {
@@ -62,6 +75,11 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * 로그아웃 메소드
+     * @param Request $request 요청 데이터
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function logout(Request $request)
     {
         Log::info('Logout request received with token: ' . $request->bearerToken());

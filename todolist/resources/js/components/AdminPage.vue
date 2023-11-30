@@ -1,8 +1,10 @@
 <template>
+  <!-- 관리자 대시보드의 메인 템플릿 -->
   <div class="max-w-md mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
     <h1 class="text-4xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
     <button @click="logout" class="border-2 rounded-lg p-1 w-full mb-6">
       Logout
+      <!-- 로그아웃 버튼 -->
     </button>
     <div
       v-for="user in users"
@@ -12,7 +14,9 @@
       <div class="user-info">
         <h2 class="text-2xl font-bold text-gray-800">
           <router-link :to="`/${user.id}/todos`">{{ user.name }}</router-link>
+          <!-- 사용자 이름과 할 일 수 표시 -->
           <span class="ml-4 mr-4">({{ user.todoCount }} Todos)</span>
+          <!-- 온라인/오프라인 상태 표시 -->
           <span
             :class="{
               'text-green-500': user.is_online,
@@ -23,6 +27,7 @@
           </span>
         </h2>
       </div>
+      <!-- 사용자별 권한 조절 버튼 -->
       <div class="crud-buttons flex space-x-2 mt-2">
         <button
           :class="buttonClass(user.create_allowed)"
@@ -48,17 +53,20 @@
 </template>
 
 <script setup>
+/** Vue, Axios, Vue Router, Vue Cookie 라이브러리 import */
 import { ref, onMounted, onUnmounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
 
+/** 사용자 정보 및 기타 상태를 위한 참조 변수 선언 */
 const users = ref([]);
 const router = useRouter();
 const loading = ref(true);
-const pollInterval = 5000; // 5초 간격으로 설정
+const pollInterval = 5000;
 let poller = null;
 
+/** 사용자 데이터를 가져오는 함수 */
 const fetchUsers = async () => {
   try {
     const response = await axios.get("/api/admin");
@@ -82,6 +90,7 @@ const fetchUsers = async () => {
   }
 };
 
+/** 사용자 권한 변경 함수 */
 const togglePermission = async (user, permissionType) => {
   try {
     const newPermissionStatus = !user[`${permissionType}_allowed`];
@@ -96,6 +105,7 @@ const togglePermission = async (user, permissionType) => {
   }
 };
 
+/** 로그아웃 함수 */
 const logout = async () => {
   try {
     const token = VueCookieNext.getCookie("token");
@@ -112,6 +122,7 @@ const logout = async () => {
   }
 };
 
+/** 버튼 클래스 설정 함수 */
 const buttonClass = (allowed) => ({
   "bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded":
     allowed,
@@ -119,18 +130,21 @@ const buttonClass = (allowed) => ({
     !allowed,
 });
 
+/** 사용자 데이터 폴링 시작 함수 */
 const startPolling = () => {
   poller = setInterval(() => {
     fetchUsers();
   }, pollInterval);
 };
 
+/** 사용자 데이터 폴링 종료 함수 */
 const stopPolling = () => {
   if (poller) {
     clearInterval(poller);
   }
 };
 
+/** 컴포넌트 마운트시 실행되는 함수 */
 onMounted(async () => {
   const token = VueCookieNext.getCookie("token");
   if (!token) {
@@ -149,6 +163,7 @@ onMounted(async () => {
   }
 });
 
+/** 컴포넌트 언마운트시 실행되는 함수 */
 onUnmounted(() => {
   stopPolling();
 });
