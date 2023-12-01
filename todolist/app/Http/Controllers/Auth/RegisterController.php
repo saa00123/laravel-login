@@ -22,7 +22,13 @@ class RegisterController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+                Rules\Password::defaults()->mixedCase()->numbers()->symbols(), // 대소문자, 숫자, 특수문자 포함
+            ],
         ]);        
     
         $user = User::create([
