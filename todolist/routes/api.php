@@ -1,11 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TodoController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\UserController;
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\TodoList\TodoController;
+use App\Http\Controllers\TodoList\TodoCreateController;
+use App\Http\Controllers\TodoList\TodoUpdateController;
+use App\Http\Controllers\TodoList\TodoDeleteController;
+
 
 // 사용자 인증 관련 라우트
 Route::post('/register', [RegisterController::class, 'register']); // 사용자 등록
@@ -16,9 +20,9 @@ Route::post('/logout', [AuthController::class, 'logout']); // 로그아웃
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [UserController::class, 'user']); // 현재 인증된 사용자 정보 조회
     Route::get('/user/{user}/todos', [TodoController::class, 'indexForUser']); // 특정 사용자의 할 일 목록 조회
-    Route::post('/user/{user}/todos', [TodoController::class, 'storeForUser']); // 특정 사용자에게 할 일 추가
-    Route::put('/user/{user}/todos/{todo}', [TodoController::class, 'update']); // 특정 할 일 수정
-    Route::delete('/user/{user}/todos/{todo}', [TodoController::class, 'destroy']); // 특정 할 일 삭제
+    Route::post('/user/{user}/todos', [TodoCreateController::class, 'storeForUser']); // 특정 사용자에게 할 일 추가
+    Route::put('/user/{user}/todos/{todo}', [TodoUpdateController::class, 'update']); // 특정 할 일 수정
+    Route::delete('/user/{user}/todos/{todo}', [TodoDeleteController::class, 'destroy']); // 특정 할 일 삭제
 
     // 관리자 전용 라우트 그룹
     Route::middleware('is_admin')->group(function () {
