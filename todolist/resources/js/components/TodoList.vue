@@ -240,10 +240,17 @@ onMounted(() => {
   } else {
     router.push("/");
   }
+
+  window.addEventListener("beforeunload", handleLogout);
 });
 
 /** 컴포넌트 언마운트 시 폴링 중단 */
 onUnmounted(() => {
   stopPolling();
+  window.removeEventListener("beforeunload", handleLogout);
 });
+
+const handleLogout = async () => {
+  await logout();
+};
 </script>
