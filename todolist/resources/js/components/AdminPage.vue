@@ -2,20 +2,32 @@
   <!-- 관리자 대시보드의 메인 템플릿 -->
   <div class="max-w-md mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
     <h1 class="text-4xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
+
+    <!-- 온라인/오프라인 필터링 토글 버튼 -->
+    <button
+      @click="toggleOnlineFilter"
+      class="border-2 rounded-lg p-1 w-full mb-6"
+    >
+      {{ showOnlineOnly ? "Show All Users" : "Show Online Only" }}
+    </button>
+
+    <!-- 로그아웃 버튼 -->
     <button @click="logout" class="border-2 rounded-lg p-1 w-full mb-6">
       Logout
-      <!-- 로그아웃 버튼 -->
     </button>
+
+    <!-- 사용자 목록 -->
     <div
-      v-for="user in users"
+      v-for="user in filteredUsers"
       :key="user.id"
-      class="user-entry mb-4 border-2 rounded-lg p-1 w-full mb-6"
+      class="user-entry mb-4 border-2 rounded-lg p-1 w-full"
     >
       <div class="user-info">
         <h2 class="text-2xl font-bold text-gray-800">
-          <router-link :to="`/${user.id}/todos`">{{ user.name }}</router-link>
           <!-- 사용자 이름과 할 일 수 표시 -->
+          <router-link :to="`/${user.id}/todos`">{{ user.name }}</router-link>
           <span class="ml-4 mr-4">({{ user.todoCount }} Todos)</span>
+
           <!-- 온라인/오프라인 상태 표시 -->
           <span
             :class="{
@@ -27,6 +39,7 @@
           </span>
         </h2>
       </div>
+
       <!-- 사용자별 권한 조절 버튼 -->
       <div class="crud-buttons flex space-x-2 mt-2">
         <button
@@ -54,7 +67,7 @@
 
 <script setup>
 /** Vue, Axios, Vue Router, Vue Cookie 라이브러리 import */
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
@@ -65,6 +78,7 @@ const router = useRouter();
 const loading = ref(true);
 const pollInterval = 5000;
 let poller = null;
+const showOnlineOnly = ref(true);
 
 /** 사용자 데이터를 가져오는 함수 */
 const fetchUsers = async () => {
@@ -142,6 +156,18 @@ const stopPolling = () => {
   if (poller) {
     clearInterval(poller);
   }
+};
+
+/** 온라인 상태에 따라 사용자 필터링 */
+const filteredUsers = computed(() => {
+  return showOnlineOnly.value
+    ? users.value.filter((user) => user.is_online)
+    : users.value;
+});
+
+/** 온라인/오프라인 필터링 토글 */
+const toggleOnlineFilter = () => {
+  showOnlineOnly.value = !showOnlineOnly.value;
 };
 
 /** 컴포넌트 마운트시 실행되는 함수 */
