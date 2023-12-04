@@ -89,7 +89,10 @@ const fetchUsers = async () => {
       ? parseInt(VueCookieNext.getCookie("adminId"))
       : null;
 
-    users.value = response.data
+    // response.data를 ID에 따라 오름차순으로 정렬
+    const sortedUsers = response.data.sort((a, b) => a.id - b.id);
+
+    users.value = sortedUsers
       .filter(
         (user) =>
           user.name.toLowerCase() !== "admin" &&
@@ -103,7 +106,6 @@ const fetchUsers = async () => {
     console.error("Error fetching users:", error);
   }
 };
-
 /** 사용자 권한 변경 함수 */
 const togglePermission = async (user, permissionType) => {
   try {
