@@ -4,12 +4,23 @@
     <h1 class="text-4xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
 
     <!-- 온라인/오프라인 필터링 토글 버튼 -->
-    <button
-      @click="toggleOnlineFilter"
-      class="border-2 rounded-lg p-1 w-full mb-6"
-    >
-      {{ showOnlineOnly ? "Show All Users" : "Show Online Only" }}
-    </button>
+    <div class="flex justify-end mb-4">
+      <div
+        class="relative inline-block w-11 align-middle select-none transition duration-200 ease-in"
+      >
+        <input
+          type="checkbox"
+          name="toggle"
+          id="toggle"
+          class="toggle-checkbox hidden"
+          v-model="showOfflineOnly"
+        />
+        <label
+          for="toggle"
+          class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"
+        ></label>
+      </div>
+    </div>
 
     <!-- 로그아웃 버튼 -->
     <button @click="logout" class="border-2 rounded-lg p-1 w-full mb-6">
@@ -64,7 +75,6 @@
     </div>
   </div>
 </template>
-
 <script setup>
 /** Vue, Axios, Vue Router, Vue Cookie 라이브러리 import */
 import { ref, onMounted, onUnmounted, computed } from "vue";
@@ -78,7 +88,7 @@ const router = useRouter();
 const loading = ref(true);
 const pollInterval = 5000;
 let poller = null;
-const showOnlineOnly = ref(true);
+const showOfflineOnly = ref(false);
 
 /** 사용자 데이터를 가져오는 함수 */
 const fetchUsers = async () => {
@@ -110,11 +120,9 @@ const fetchUsers = async () => {
 const togglePermission = async (user, permissionType) => {
   try {
     const newPermissionStatus = !user[`${permissionType}_allowed`];
-
     await axios.put(`/api/admin/user/${user.id}/permissions`, {
       [`${permissionType}_allowed`]: newPermissionStatus,
     });
-
     user[`${permissionType}_allowed`] = newPermissionStatus;
   } catch (error) {
     console.error("Error updating permission:", error);
@@ -162,14 +170,14 @@ const stopPolling = () => {
 
 /** 온라인 상태에 따라 사용자 필터링 */
 const filteredUsers = computed(() => {
-  return showOnlineOnly.value
-    ? users.value.filter((user) => user.is_online)
-    : users.value;
+  return showOfflineOnly.value
+    ? users.value.filter((user) => !user.is_online)
+    : users.value.filter((user) => user.is_online);
 });
 
 /** 온라인/오프라인 필터링 토글 */
 const toggleOnlineFilter = () => {
-  showOnlineOnly.value = !showOnlineOnly.value;
+  showOfflineOnly.value = !showOfflineOnly.value;
 };
 
 /** 컴포넌트 마운트시 실행되는 함수 */
@@ -196,3 +204,17 @@ onUnmounted(() => {
   stopPolling();
 });
 </script>
+
+<style scoped>
+.toggle-checkbox:checked + .toggle-label {
+  @apply bg-green-500;
+}
+
+.toggle-label {
+  @apply block h-5 w-11 rounded-full bg-gray-300 after:content-[''] after:block after:absolute after:h-4 after:w-4 after:rounded-full after:bg-white after:shadow after:left-1 after:top-1/2 after:-translate-y-1/2 after:transition-transform after:duration-200;
+}
+
+.toggle-checkbox:checked + .toggle-label:after {
+  @apply transform translate-x-5;
+}
+</style>
