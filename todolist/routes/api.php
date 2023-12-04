@@ -9,6 +9,7 @@ use App\Http\Controllers\TodoList\TodoController;
 use App\Http\Controllers\TodoList\TodoCreateController;
 use App\Http\Controllers\TodoList\TodoUpdateController;
 use App\Http\Controllers\TodoList\TodoDeleteController;
+use App\Http\Controllers\TodoList\TodoBoardController;
 
 
 // 사용자 인증 관련 라우트
@@ -28,5 +29,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('is_admin')->group(function () {
         Route::get('/admin', [AdminController::class, 'index']); // 관리자 대시보드
         Route::put('/admin/user/{user}/permissions', [AdminController::class, 'updatePermissions']); // 사용자 권한 업데이트
+        Route::get('/todos/all', [TodoBoardController::class, 'getAllTodos']);
     });
 });

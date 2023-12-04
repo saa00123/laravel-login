@@ -3,6 +3,11 @@
   <div class="max-w-md mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
     <h1 class="text-4xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
 
+    <!-- 전체 Todo 목록 보기 버튼 -->
+    <button @click="goToTodoBoard" class="border-2 rounded-lg p-1 w-full mb-6">
+      View All Todos
+    </button>
+
     <!-- 온라인/오프라인 필터링 토글 버튼 -->
     <div class="flex justify-end mb-4">
       <div
@@ -166,6 +171,11 @@ const stopPolling = () => {
   if (poller) {
     clearInterval(poller);
   }
+};
+
+/** Todo 게시판 페이지로 이동하는 함수 */
+const goToTodoBoard = () => {
+  router.push("/todo-board");
 };
 
 /** 온라인 상태에 따라 사용자 필터링 */

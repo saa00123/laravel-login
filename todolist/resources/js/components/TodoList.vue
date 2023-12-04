@@ -17,12 +17,14 @@
     <div v-if="userPermissions.create_allowed" class="flex items-center mb-4">
       <input
         type="text"
-        class="border-2 rounded-lg p-1 w-full mr-2"
+        class="border-2 rounded-lg p-1 w-full mr-3"
         v-model="newTodo"
         @keyup.enter="addTodo"
         placeholder="새 할 일 추가..."
       />
-      <button class="border-2 rounded-lg p-1" @click="addTodo">추가</button>
+      <button class="border-2 rounded-lg w-20 p-1" @click="addTodo">
+        추가
+      </button>
     </div>
     <!-- 할 일 추가 오류 메시지 표시 -->
     <div v-if="errorMessages.addTodo" class="text-red-500">

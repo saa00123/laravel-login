@@ -3,6 +3,7 @@ import LoginForm from "../components/LoginForm.vue";
 import RegisterForm from "../components/RegisterForm.vue";
 import TodoList from "../components/TodoList.vue";
 import AdminPage from "../components/AdminPage.vue";
+import TodoBoard from "../components/TodoBoard.vue";
 import { store } from "../store";
 import { VueCookieNext } from "vue-cookie-next";
 
@@ -12,6 +13,11 @@ const routes = [
   { path: "/register", component: RegisterForm }, // 회원가입 폼
   { path: "/:userId/todos", component: TodoList, props: true }, // 특정 사용자의 할 일 목록
   { path: "/admin", component: AdminPage, meta: { requiresAdmin: true } }, // 관리자 페이지
+  {
+    path: "/todo-board",
+    name: "TodoBoard",
+    component: TodoBoard,
+  },
 ];
 
 // Vue Router 인스턴스 생성
