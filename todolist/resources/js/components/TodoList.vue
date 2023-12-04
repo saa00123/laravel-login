@@ -1,10 +1,9 @@
 <template>
   <!-- 할 일 목록 페이지 템플릿 -->
   <div class="max-w-md mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
-    <h1 class="text-4xl font-bold text-gray-800 mb-6">Todo List</h1>
+    <h1 class="text-4xl font-bold text-gray-800 mb-6">할 일 목록</h1>
     <button @click="logout" class="border-2 rounded-lg p-1 w-full mb-6">
-      Logout
-      <!-- 로그아웃 버튼 -->
+      로그아웃
     </button>
     <!-- 관리자 대시보드로 이동하는 버튼 -->
     <button
@@ -12,7 +11,7 @@
       @click="goToAdminDashboard"
       class="border-2 rounded-lg p-1 w-full mb-6"
     >
-      Go to Admin Dashboard
+      관리자 대시보드로 이동
     </button>
     <!-- 할 일 추가 입력 필드 -->
     <div v-if="userPermissions.create_allowed" class="flex items-center mb-4">
@@ -21,9 +20,9 @@
         class="border-2 rounded-lg p-1 w-full mr-2"
         v-model="newTodo"
         @keyup.enter="addTodo"
-        placeholder="Add new todo..."
+        placeholder="새 할 일 추가..."
       />
-      <button class="border-2 rounded-lg p-1" @click="addTodo">Add</button>
+      <button class="border-2 rounded-lg p-1" @click="addTodo">추가</button>
     </div>
     <!-- 할 일 추가 오류 메시지 표시 -->
     <div v-if="errorMessages.addTodo" class="text-red-500">
@@ -63,14 +62,14 @@
             @click="editTodo(todo)"
             class="border-2 rounded-lg p-1"
           >
-            Edit
+            수정
           </button>
           <button
             v-if="userPermissions.delete_allowed"
             @click="deleteTodo(todo)"
             class="border-2 rounded-lg p-1"
           >
-            Delete
+            삭제
           </button>
         </div>
       </li>
@@ -80,7 +79,7 @@
 
 <script setup>
 /** 필요한 라이브러리 및 모듈 import */
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
@@ -122,7 +121,7 @@ const addTodo = async () => {
   if (!userPermissions.value.create_allowed) return;
 
   if (!newTodo.value.trim()) {
-    errorMessages.value.addTodo = "Please enter a todo item";
+    errorMessages.value.addTodo = "할 일을 입력해주세요.";
     return;
   }
 
@@ -135,7 +134,7 @@ const addTodo = async () => {
     errorMessages.value.addTodo = null;
   } catch (error) {
     console.error(error);
-    errorMessages.value.addTodo = "Error adding todo";
+    errorMessages.value.addTodo = "할 일 추가 오류";
   }
 };
 
@@ -197,7 +196,7 @@ const logout = async () => {
     VueCookieNext.removeCookie("isAdmin");
     router.push("/");
   } catch (error) {
-    console.error("Logout failed:", error);
+    console.error("로그아웃 실패:", error);
   }
 };
 
@@ -212,15 +211,39 @@ const goToAdminDashboard = () => {
   router.push("/admin");
 };
 
-/** 컴포넌트 마운트 시 할 일 목록을 가져오는 로직 */
+/** 폴링 간격 정의 */
+const pollInterval = 5000; // 폴링 간격을 5초로 설정
+let poller = null; // 폴링을 위한 변수
+
+/** 폴링을 시작하는 함수 */
+const startPolling = () => {
+  poller = setInterval(() => {
+    fetchTodos();
+  }, pollInterval);
+};
+
+/** 폴링을 중단하는 함수 */
+const stopPolling = () => {
+  if (poller) {
+    clearInterval(poller);
+  }
+};
+
+/** 컴포넌트 마운트 시 폴링 시작 */
 onMounted(() => {
   const token = VueCookieNext.getCookie("token");
 
   if (token) {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     fetchTodos();
+    startPolling();
   } else {
     router.push("/");
   }
+});
+
+/** 컴포넌트 언마운트 시 폴링 중단 */
+onUnmounted(() => {
+  stopPolling();
 });
 </script>
