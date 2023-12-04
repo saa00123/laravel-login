@@ -91,7 +91,7 @@ const register = async () => {
       name: name.value,
       email: email.value,
       password: password.value,
-      password_confirmation: passwordConfirmation.value, // 서버로 보내는 데이터에 비밀번호 확인 필드 추가
+      password_confirmation: passwordConfirmation.value,
     });
 
     // 오류 메시지 초기화 및 라우팅
@@ -99,6 +99,9 @@ const register = async () => {
     errorMessages.email = null;
     errorMessages.password = null;
     errorMessages.passwordConfirmation = null;
+
+    // 등록 성공 메시지 표시 (옵션)
+    alert("Registration successful. Please log in.");
 
     router.push("/");
   } catch (error) {

@@ -44,7 +44,6 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_admin' => 'boolean',
-        'is_online' => 'boolean',
     ];
 
     /**
@@ -55,6 +54,7 @@ class User extends Authenticatable
         'create_allowed' => true,
         'update_allowed' => true,
         'delete_allowed' => true,
+        'is_online' => false,
     ];
 
     /**

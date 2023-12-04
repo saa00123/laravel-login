@@ -207,11 +207,11 @@ onUnmounted(() => {
 
 <style scoped>
 .toggle-checkbox:checked + .toggle-label {
-  @apply bg-green-500;
+  @apply bg-gray-300;
 }
 
 .toggle-label {
-  @apply block h-5 w-11 rounded-full bg-gray-300 after:content-[''] after:block after:absolute after:h-4 after:w-4 after:rounded-full after:bg-white after:shadow after:left-1 after:top-1/2 after:-translate-y-1/2 after:transition-transform after:duration-200;
+  @apply block h-5 w-11 rounded-full bg-green-500 after:content-[''] after:block after:absolute after:h-4 after:w-4 after:rounded-full after:bg-white after:shadow after:left-1 after:top-1/2 after:-translate-y-1/2 after:transition-transform after:duration-200;
 }
 
 .toggle-checkbox:checked + .toggle-label:after {
