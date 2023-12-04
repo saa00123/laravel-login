@@ -44,6 +44,19 @@
           {{ errorMessages.password }}
         </div>
       </div>
+      <!-- 비밀번호 확인 입력 필드 -->
+      <div>
+        <input
+          v-model="passwordConfirmation"
+          type="password"
+          placeholder="Confirm Password"
+          class="border-2 rounded-lg p-1 w-full"
+        />
+        <!-- 비밀번호 확인 입력 오류 메시지 표시 -->
+        <div v-if="errorMessages.passwordConfirmation" class="text-red-500">
+          {{ errorMessages.passwordConfirmation }}
+        </div>
+      </div>
       <!-- 등록 버튼 -->
       <button type="submit" class="border-2 rounded-lg p-1 w-full">
         Register
@@ -63,10 +76,12 @@ const router = useRouter();
 const name = ref("");
 const email = ref("");
 const password = ref("");
+const passwordConfirmation = ref(""); // 비밀번호 확인 필드
 const errorMessages = reactive({
   name: null,
   email: null,
   password: null,
+  passwordConfirmation: null, // 비밀번호 확인 오류 메시지
 });
 
 /** 사용자 등록 처리 함수 */
@@ -76,12 +91,14 @@ const register = async () => {
       name: name.value,
       email: email.value,
       password: password.value,
+      password_confirmation: passwordConfirmation.value, // 서버로 보내는 데이터에 비밀번호 확인 필드 추가
     });
 
     // 오류 메시지 초기화 및 라우팅
     errorMessages.name = null;
     errorMessages.email = null;
     errorMessages.password = null;
+    errorMessages.passwordConfirmation = null;
 
     router.push("/");
   } catch (error) {
@@ -90,6 +107,8 @@ const register = async () => {
       errorMessages.name = error.response.data.errors.name || null;
       errorMessages.email = error.response.data.errors.email || null;
       errorMessages.password = error.response.data.errors.password || null;
+      errorMessages.passwordConfirmation =
+        error.response.data.errors.password_confirmation || null;
     } else if (error.response && error.response.data.message) {
       console.error("Registration failed:", error.response.data.message);
     } else {

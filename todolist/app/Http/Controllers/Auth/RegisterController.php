@@ -4,19 +4,19 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Events\UserOnlineStatusChanged;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rules\Password;
 
 class RegisterController extends Controller
 {
-      /**
-     * 사용자 등록(회원가입) 메소드
-     * @param Request $request 요청 데이터
-     * @return \Illuminate\Http\JsonResponse
-     */
+    /**
+    * 사용자 등록(회원가입) 메소드
+    * @param Request $request 요청 데이터
+    * @return \Illuminate\Http\JsonResponse
+    */
     public function register(Request $request)
     {
         $validatedData = $request->validate([
@@ -26,8 +26,10 @@ class RegisterController extends Controller
                 'required',
                 'string',
                 'min:8',
+                Password::min(8) 
+                    ->numbers()
+                    ->symbols(),
                 'confirmed',
-                Rules\Password::defaults()->mixedCase()->numbers()->symbols(), // 대소문자, 숫자, 특수문자 포함
             ],
         ]);        
     
