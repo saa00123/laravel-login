@@ -77,4 +77,12 @@ class User extends Authenticatable
 
         broadcast(new UserOnlineStatusChanged($this))->toOthers();
     }
+
+    /**
+     * 사용자별 미완료된 할 일의 수를 반환
+     */
+    public function getIncompleteTodosCountAttribute()
+    {
+        return $this->todos()->where('completed', false)->count();
+    }
 }

@@ -115,12 +115,13 @@ const fetchUsers = async () => {
       )
       .map((user) => ({
         ...user,
-        todoCount: user.todos_count,
+        todoCount: user.incomplete_todos_count,
       }));
   } catch (error) {
     console.error("Error fetching users:", error);
   }
 };
+
 /** 사용자 권한 변경 함수 */
 const togglePermission = async (user, permissionType) => {
   try {

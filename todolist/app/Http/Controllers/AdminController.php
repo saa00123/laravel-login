@@ -8,12 +8,14 @@ use Illuminate\Http\Request;
 class AdminController extends Controller
 {
     /**
-     * 사용자 목록과 각 사용자의 할 일 수를 조회하는 메소드
+     * 사용자 목록과 각 사용자의 미완료된 할 일 수를 조회하는 메소드
      */
     public function index()
     {
-        $users = User::withCount('todos')
-                     ->get(['id', 'name', 'todos_count', 'is_online']);
+        $users = User::withCount(['todos as incomplete_todos_count' => function ($query) {
+            $query->where('completed', false);
+        }])
+        ->get(['id', 'name', 'incomplete_todos_count', 'is_online']);
 
         return response()->json($users);
     }
