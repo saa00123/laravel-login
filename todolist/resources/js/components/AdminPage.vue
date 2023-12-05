@@ -5,7 +5,7 @@
 
     <!-- 전체 Todo 목록 보기 버튼 -->
     <button @click="goToTodoBoard" class="border-2 rounded-lg p-1 w-full mb-6">
-      View All Todos
+      TodoBoard
     </button>
 
     <!-- 온라인/오프라인 필터링 토글 버튼 -->
@@ -29,7 +29,7 @@
 
     <!-- 로그아웃 버튼 -->
     <button @click="logout" class="border-2 rounded-lg p-1 w-full mb-6">
-      Logout
+      로그아웃
     </button>
 
     <!-- 사용자 목록 -->

@@ -33,7 +33,7 @@
     <!-- 할 일 목록 표시 -->
     <ul class="space-y-3">
       <li
-        v-for="todo in todos"
+        v-for="todo in sortedTodos"
         :key="todo.id"
         :class="{ 'line-through text-gray-500': todo.completed }"
         class="flex border-2 rounded-lg items-center justify-between p-3"
@@ -184,6 +184,16 @@ const deleteTodo = async (todo) => {
     console.error(error);
   }
 };
+
+/** 투두리스트 정렬 */
+const sortedTodos = computed(() => {
+  const incompleteTodos = todos.value
+    .filter((todo) => !todo.completed)
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  const completeTodos = todos.value.filter((todo) => todo.completed);
+
+  return [...incompleteTodos, ...completeTodos];
+});
 
 /** 로그아웃 처리 함수 */
 const logout = async () => {
