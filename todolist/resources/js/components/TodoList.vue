@@ -96,6 +96,8 @@ import { ref, onMounted, onUnmounted, computed } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
+import Echo from "laravel-echo";
+import Pusher from "pusher-js";
 
 /** 상태 관리를 위한 참조 변수들 */
 const todos = ref([]);
@@ -118,6 +120,20 @@ const props = defineProps({
     default: 0,
     validator: (value) => !isNaN(parseInt(value)),
   },
+});
+
+/** Echo 인스턴스 생성 */
+const echo = new Echo({
+  broadcaster: "pusher",
+  key: "d530c4d0851df35c4452",
+  cluster: "ap3",
+  encrypted: true,
+});
+
+/** Pusher 채널 구독 및 이벤트 수신 */
+echo.channel("todolist").listen("UserUpdated", (event) => {
+  console.log("UserUpdated event received", event);
+  fetchTodos();
 });
 
 /** 할 일 목록 및 권한 정보를 가져오는 함수 */
@@ -236,24 +252,6 @@ const goToAdminDashboard = () => {
   router.push("/admin");
 };
 
-/** 폴링 간격 정의 */
-const pollInterval = 5000; // 폴링 간격을 5초로 설정
-let poller = null; // 폴링을 위한 변수
-
-/** 폴링을 시작하는 함수 */
-const startPolling = () => {
-  poller = setInterval(() => {
-    fetchTodos();
-  }, pollInterval);
-};
-
-/** 폴링을 중단하는 함수 */
-const stopPolling = () => {
-  if (poller) {
-    clearInterval(poller);
-  }
-};
-
 /** 현재 페이지에 표시될 투두리스트를 계산 */
 const paginatedTodos = computed(() => {
   const start = (currentPage.value - 1) * perPage;
@@ -266,28 +264,21 @@ const totalPages = computed(() => {
   return Math.ceil(sortedTodos.value.length / perPage);
 });
 
-/** 컴포넌트 마운트 시 폴링 시작 */
+/** 컴포넌트 마운트 시 데이터 가져오고 Pusher 구독 시작 */
 onMounted(() => {
   const token = VueCookieNext.getCookie("token");
 
   if (token) {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     fetchTodos();
-    startPolling();
   } else {
     router.push("/");
   }
-
-  window.addEventListener("beforeunload", handleLogout);
 });
 
-/** 컴포넌트 언마운트 시 폴링 중단 */
+/** 컴포넌트 언마운트 시 Pusher 구독 중지 */
 onUnmounted(() => {
-  stopPolling();
-  window.removeEventListener("beforeunload", handleLogout);
+  // Pusher 채널 구독 해제
+  echo.leave("todolist");
 });
-
-const handleLogout = async () => {
-  await logout();
-};
 </script>

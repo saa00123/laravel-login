@@ -80,20 +80,29 @@
     </div>
   </div>
 </template>
+
 <script setup>
 /** Vue, Axios, Vue Router, Vue Cookie 라이브러리 import */
-import { ref, onMounted, onUnmounted, computed } from "vue";
+import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
+import Echo from "laravel-echo";
+import Pusher from "pusher-js";
 
 /** 사용자 정보 및 기타 상태를 위한 참조 변수 선언 */
-const users = ref([]);
+const users = reactive({ list: [] });
 const router = useRouter();
-const loading = ref(true);
-const pollInterval = 5000;
-let poller = null;
 const showOfflineOnly = ref(false);
+
+/** Pusher 및 Echo 설정 */
+const echo = new Echo({
+  broadcaster: "pusher",
+  key: "d530c4d0851df35c4452",
+  cluster: "ap3",
+  encrypted: true,
+  enabledTransports: ["ws", "wss"],
+});
 
 /** 사용자 데이터를 가져오는 함수 */
 const fetchUsers = async () => {
@@ -104,10 +113,7 @@ const fetchUsers = async () => {
       ? parseInt(VueCookieNext.getCookie("adminId"))
       : null;
 
-    // response.data를 ID에 따라 오름차순으로 정렬
-    const sortedUsers = response.data.sort((a, b) => a.id - b.id);
-
-    users.value = sortedUsers
+    const newUsers = response.data
       .filter(
         (user) =>
           user.name.toLowerCase() !== "admin" &&
@@ -117,6 +123,8 @@ const fetchUsers = async () => {
         ...user,
         todoCount: user.incomplete_todos_count,
       }));
+
+    users.list.splice(0, users.list.length, ...newUsers);
   } catch (error) {
     console.error("Error fetching users:", error);
   }
@@ -160,20 +168,6 @@ const buttonClass = (allowed) => ({
     !allowed,
 });
 
-/** 사용자 데이터 폴링 시작 함수 */
-const startPolling = () => {
-  poller = setInterval(() => {
-    fetchUsers();
-  }, pollInterval);
-};
-
-/** 사용자 데이터 폴링 종료 함수 */
-const stopPolling = () => {
-  if (poller) {
-    clearInterval(poller);
-  }
-};
-
 /** Todo 게시판 페이지로 이동하는 함수 */
 const goToTodoBoard = () => {
   router.push("/todo-board");
@@ -181,9 +175,13 @@ const goToTodoBoard = () => {
 
 /** 온라인 상태에 따라 사용자 필터링 */
 const filteredUsers = computed(() => {
+  if (!Array.isArray(users.list) || users.list.length === 0) {
+    return [];
+  }
+
   return showOfflineOnly.value
-    ? users.value.filter((user) => !user.is_online)
-    : users.value.filter((user) => user.is_online);
+    ? users.list.filter((user) => !user.is_online)
+    : users.list.filter((user) => user.is_online);
 });
 
 /** 온라인/오프라인 필터링 토글 */
@@ -199,20 +197,18 @@ onMounted(async () => {
     return;
   }
 
-  try {
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  fetchUsers();
+
+  echo.channel("todolist").listen(".UserUpdated", (event) => {
+    console.log("UserUpdated event received:", event);
     fetchUsers();
-    startPolling();
-  } catch (error) {
-    console.error("Error during mounting:", error);
-  } finally {
-    loading.value = false;
-  }
+  });
 });
 
 /** 컴포넌트 언마운트시 실행되는 함수 */
 onUnmounted(() => {
-  stopPolling();
+  echo.leave("todolist");
 });
 </script>
 

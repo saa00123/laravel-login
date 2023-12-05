@@ -56,6 +56,8 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
+import Echo from "laravel-echo";
+import Pusher from "pusher-js";
 
 /** 상태 관리를 위한 참조 변수들 */
 const todos = ref([]);
@@ -64,8 +66,20 @@ const router = useRouter();
 const isAdmin = computed(() => VueCookieNext.getCookie("isAdmin") === "true");
 const currentPage = ref(1);
 const itemsPerPage = 10;
-const pollInterval = 5000;
-let poller = null;
+
+/** Echo 인스턴스 생성 */
+const echo = new Echo({
+  broadcaster: "pusher",
+  key: "d530c4d0851df35c4452",
+  cluster: "ap3",
+  encrypted: true,
+});
+
+/** Pusher 채널 구독 및 이벤트 수신 */
+echo.channel("todolist").listen("TodoUpdated", (event) => {
+  console.log("TodoUpdated event received", event);
+  fetchTodos();
+});
 
 /** 모든 사용자의 Todo 목록을 가져오는 함수 */
 const fetchTodos = async () => {
@@ -105,26 +119,12 @@ const totalPages = computed(() => {
   return Math.ceil(filteredTodos.value.length / itemsPerPage);
 });
 
-/**  폴링을 시작하는 함수 */
-const startPolling = () => {
-  poller = setInterval(() => {
-    fetchTodos();
-  }, pollInterval);
-};
-
-/** 폴링을 중단하는 함수 */
-const stopPolling = () => {
-  if (poller) {
-    clearInterval(poller);
-  }
-};
-
 onMounted(() => {
   fetchTodos();
-  startPolling();
 });
 
 onUnmounted(() => {
-  stopPolling();
+  // Pusher 채널 구독 해제
+  echo.leave("todolist");
 });
 </script>
