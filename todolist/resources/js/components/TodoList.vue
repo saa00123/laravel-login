@@ -33,7 +33,7 @@
     <!-- 할 일 목록 표시 -->
     <ul class="space-y-3">
       <li
-        v-for="todo in sortedTodos"
+        v-for="todo in paginatedTodos"
         :key="todo.id"
         :class="{ 'line-through text-gray-500': todo.completed }"
         class="flex border-2 rounded-lg items-center justify-between p-3"
@@ -76,6 +76,17 @@
         </div>
       </li>
     </ul>
+    <!-- 페이지네이션 -->
+    <div class="mt-6 flex justify-center">
+      <button
+        v-for="page in totalPages"
+        :key="page"
+        @click="currentPage = page"
+        class="border p-2 mx-1"
+      >
+        {{ page }}
+      </button>
+    </div>
   </div>
 </template>
 
@@ -96,6 +107,8 @@ const userPermissions = ref({
   delete_allowed: false,
 });
 const errorMessages = ref({ addTodo: null });
+const currentPage = ref(1);
+const perPage = 10;
 
 /** props 정의 및 검증 */
 const props = defineProps({
@@ -240,6 +253,18 @@ const stopPolling = () => {
     clearInterval(poller);
   }
 };
+
+/** 현재 페이지에 표시될 투두리스트를 계산 */
+const paginatedTodos = computed(() => {
+  const start = (currentPage.value - 1) * perPage;
+  const end = start + perPage;
+  return sortedTodos.value.slice(start, end);
+});
+
+/** 전체 페이지 수 계산 */
+const totalPages = computed(() => {
+  return Math.ceil(sortedTodos.value.length / perPage);
+});
 
 /** 컴포넌트 마운트 시 폴링 시작 */
 onMounted(() => {
