@@ -96,8 +96,6 @@ import { ref, onMounted, onUnmounted, computed } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
-import Echo from "laravel-echo";
-import Pusher from "pusher-js";
 
 /** 상태 관리를 위한 참조 변수들 */
 const todos = ref([]);
@@ -111,6 +109,8 @@ const userPermissions = ref({
 const errorMessages = ref({ addTodo: null });
 const currentPage = ref(1);
 const perPage = 10;
+const pollInterval = 5000;
+let poller = null;
 
 /** props 정의 및 검증 */
 const props = defineProps({
@@ -120,20 +120,6 @@ const props = defineProps({
     default: 0,
     validator: (value) => !isNaN(parseInt(value)),
   },
-});
-
-/** Echo 인스턴스 생성 */
-const echo = new Echo({
-  broadcaster: "pusher",
-  key: "d530c4d0851df35c4452",
-  cluster: "ap3",
-  encrypted: true,
-});
-
-/** Pusher 채널 구독 및 이벤트 수신 */
-echo.channel("todolist").listen("UserUpdated", (event) => {
-  console.log("UserUpdated event received", event);
-  fetchTodos();
 });
 
 /** 할 일 목록 및 권한 정보를 가져오는 함수 */
@@ -264,6 +250,19 @@ const totalPages = computed(() => {
   return Math.ceil(sortedTodos.value.length / perPage);
 });
 
+/** 폴링을 시작하는 함수 */
+const startPolling = () => {
+  poller = setInterval(() => {
+    fetchTodos();
+  }, pollInterval);
+};
+/** 폴링을 중단하는 함수 */
+const stopPolling = () => {
+  if (poller) {
+    clearInterval(poller);
+  }
+};
+
 /** 컴포넌트 마운트 시 데이터 가져오고 Pusher 구독 시작 */
 onMounted(() => {
   const token = VueCookieNext.getCookie("token");
@@ -271,6 +270,7 @@ onMounted(() => {
   if (token) {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     fetchTodos();
+    startPolling();
   } else {
     router.push("/");
   }
@@ -278,7 +278,6 @@ onMounted(() => {
 
 /** 컴포넌트 언마운트 시 Pusher 구독 중지 */
 onUnmounted(() => {
-  // Pusher 채널 구독 해제
-  echo.leave("todolist");
+  stopPolling();
 });
 </script>

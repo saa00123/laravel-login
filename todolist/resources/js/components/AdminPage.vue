@@ -83,26 +83,18 @@
 
 <script setup>
 /** Vue, Axios, Vue Router, Vue Cookie 라이브러리 import */
-import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
-import Echo from "laravel-echo";
-import Pusher from "pusher-js";
 
 /** 사용자 정보 및 기타 상태를 위한 참조 변수 선언 */
-const users = reactive({ list: [] });
+const users = ref([]);
 const router = useRouter();
 const showOfflineOnly = ref(false);
-
-/** Pusher 및 Echo 설정 */
-const echo = new Echo({
-  broadcaster: "pusher",
-  key: "d530c4d0851df35c4452",
-  cluster: "ap3",
-  encrypted: true,
-  enabledTransports: ["ws", "wss"],
-});
+const loading = ref(true);
+const pollInterval = 5000;
+let poller = null;
 
 /** 사용자 데이터를 가져오는 함수 */
 const fetchUsers = async () => {
@@ -124,7 +116,7 @@ const fetchUsers = async () => {
         todoCount: user.incomplete_todos_count,
       }));
 
-    users.list.splice(0, users.list.length, ...newUsers);
+    users.value = newUsers; // 수정된 부분
   } catch (error) {
     console.error("Error fetching users:", error);
   }
@@ -175,18 +167,32 @@ const goToTodoBoard = () => {
 
 /** 온라인 상태에 따라 사용자 필터링 */
 const filteredUsers = computed(() => {
-  if (!Array.isArray(users.list) || users.list.length === 0) {
+  if (!Array.isArray(users.value) || users.value.length === 0) {
     return [];
   }
 
   return showOfflineOnly.value
-    ? users.list.filter((user) => !user.is_online)
-    : users.list.filter((user) => user.is_online);
+    ? users.value.filter((user) => !user.is_online)
+    : users.value.filter((user) => user.is_online);
 });
 
 /** 온라인/오프라인 필터링 토글 */
 const toggleOnlineFilter = () => {
   showOfflineOnly.value = !showOfflineOnly.value;
+};
+
+/** 사용자 데이터 폴링 시작 함수 */
+const startPolling = () => {
+  poller = setInterval(() => {
+    fetchUsers();
+  }, pollInterval);
+};
+
+/** 사용자 데이터 폴링 종료 함수 */
+const stopPolling = () => {
+  if (poller) {
+    clearInterval(poller);
+  }
 };
 
 /** 컴포넌트 마운트시 실행되는 함수 */
@@ -197,18 +203,20 @@ onMounted(async () => {
     return;
   }
 
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  fetchUsers();
-
-  echo.channel("todolist").listen(".UserUpdated", (event) => {
-    console.log("UserUpdated event received:", event);
+  try {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     fetchUsers();
-  });
+    startPolling();
+  } catch (error) {
+    console.error("Error during mounting:", error);
+  } finally {
+    loading.value = false;
+  }
 });
 
 /** 컴포넌트 언마운트시 실행되는 함수 */
 onUnmounted(() => {
-  echo.leave("todolist");
+  stopPolling();
 });
 </script>
 
