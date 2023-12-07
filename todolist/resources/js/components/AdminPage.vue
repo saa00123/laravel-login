@@ -3,11 +3,6 @@
   <div class="max-w-md mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
     <h1 class="text-4xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
 
-    <!-- 전체 Todo 목록 보기 버튼 -->
-    <button @click="goToTodoBoard" class="border-2 rounded-lg p-1 w-full mb-6">
-      TodoBoard
-    </button>
-
     <!-- 온라인/오프라인 필터링 토글 버튼 -->
     <div class="flex justify-end mb-4">
       <div
@@ -27,10 +22,20 @@
       </div>
     </div>
 
+    <!-- 전체 Todo 목록 보기 버튼 -->
+    <button @click="goToTodoBoard" class="border-2 rounded-lg p-1 w-full mb-6">
+      TodoBoard
+    </button>
+
     <!-- 로그아웃 버튼 -->
     <button @click="logout" class="border-2 rounded-lg p-1 w-full mb-6">
       로그아웃
     </button>
+
+    <!-- 차트 컨테이너 -->
+    <div class="chart-container my-6">
+      <canvas id="userActivityChart"></canvas>
+    </div>
 
     <!-- 사용자 목록 -->
     <div
@@ -83,10 +88,12 @@
 
 <script setup>
 /** Vue, Axios, Vue Router, Vue Cookie 라이브러리 import */
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
+import { Chart, registerables } from "chart.js";
+Chart.register(...registerables);
 
 /** 사용자 정보 및 기타 상태를 위한 참조 변수 선언 */
 const users = ref([]);
@@ -94,6 +101,7 @@ const router = useRouter();
 const showOfflineOnly = ref(false);
 const loading = ref(true);
 const pollInterval = 5000;
+const chartInstance = ref(null);
 let poller = null;
 
 /** 사용자 데이터를 가져오는 함수 */
@@ -105,7 +113,7 @@ const fetchUsers = async () => {
       ? parseInt(VueCookieNext.getCookie("adminId"))
       : null;
 
-    const newUsers = response.data
+    let newUsers = response.data
       .filter(
         (user) =>
           user.name.toLowerCase() !== "admin" &&
@@ -115,8 +123,9 @@ const fetchUsers = async () => {
         ...user,
         todoCount: user.incomplete_todos_count,
       }));
+    newUsers.sort((a, b) => a.id - b.id);
 
-    users.value = newUsers; // 수정된 부분
+    users.value = newUsers;
   } catch (error) {
     console.error("Error fetching users:", error);
   }
@@ -181,10 +190,50 @@ const toggleOnlineFilter = () => {
   showOfflineOnly.value = !showOfflineOnly.value;
 };
 
+/** 차트 데이터와 옵션을 설정하고 차트를 생성하는 함수 */
+const createOrUpdateChart = () => {
+  nextTick(() => {
+    const canvas = document.getElementById("userActivityChart");
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!chartInstance.value) {
+      chartInstance.value = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: users.value.map((user) => user.name),
+          datasets: [
+            {
+              label: "User Activity",
+              data: users.value.map((user) => user.todoCount),
+              backgroundColor: "rgba(75, 192, 192, 0.5)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    } else {
+      chartInstance.value.data.labels = users.value.map((user) => user.name);
+      chartInstance.value.data.datasets[0].data = users.value.map(
+        (user) => user.todoCount,
+      );
+      chartInstance.value.update();
+    }
+  });
+};
+
 /** 사용자 데이터 폴링 시작 함수 */
 const startPolling = () => {
-  poller = setInterval(() => {
-    fetchUsers();
+  poller = setInterval(async () => {
+    await fetchUsers();
   }, pollInterval);
 };
 
@@ -205,7 +254,8 @@ onMounted(async () => {
 
   try {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    fetchUsers();
+    await fetchUsers();
+    createOrUpdateChart();
     startPolling();
   } catch (error) {
     console.error("Error during mounting:", error);
@@ -216,7 +266,8 @@ onMounted(async () => {
 
 /** 컴포넌트 언마운트시 실행되는 함수 */
 onUnmounted(() => {
-  stopPolling();
+  if (poller) clearInterval(poller);
+  if (chartInstance.value) chartInstance.value.destroy();
 });
 </script>
 
@@ -231,5 +282,16 @@ onUnmounted(() => {
 
 .toggle-checkbox:checked + .toggle-label:after {
   @apply transform translate-x-5;
+}
+
+.chart-container {
+  width: 100%;
+  height: 400px;
+  overflow-x: auto;
+}
+
+#userActivityChart {
+  width: 600px !important;
+  height: 300px !important;
 }
 </style>

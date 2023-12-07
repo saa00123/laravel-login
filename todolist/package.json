@@ -18,6 +18,7 @@
         "vite-plugin-windicss": "^1.9.2"
     },
     "dependencies": {
+        "chart.js": "^4.4.1",
         "laravel-echo": "^1.15.3",
         "pusher-js": "^8.3.0",
         "vue": "^3.2.36",

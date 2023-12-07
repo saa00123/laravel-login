@@ -20,7 +20,8 @@ Route::post('/logout', [AuthController::class, 'logout']); // 로그아웃
 // 인증된 사용자만 접근 가능한 라우트 그룹
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [UserController::class, 'user']); // 현재 인증된 사용자 정보 조회
-    Route::get('/user/{user}/todos', [TodoController::class, 'indexForUser']); // 특정 사용자의 할 일 목록 조회
+    Route::get('/user/{user}/todos', [TodoController::class, 'indexForUser'])
+         ->withoutMiddleware('is_admin');
     Route::post('/user/{user}/todos', [TodoCreateController::class, 'storeForUser']); // 특정 사용자에게 할 일 추가
     Route::put('/user/{user}/todos/{todo}', [TodoUpdateController::class, 'update']); // 특정 할 일 수정
     Route::delete('/user/{user}/todos/{todo}', [TodoDeleteController::class, 'destroy']); // 특정 할 일 삭제
