@@ -80,9 +80,9 @@ const login = async () => {
     VueCookieNext.setCookie("token", response.data.access_token, {
       expires: "1d",
     });
-    axios.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${response.data.access_token}`;
+    // axios.defaults.headers.common[
+    //   "Authorization"
+    // ] = `Bearer ${response.data.access_token}`;
 
     const user = response.data.user;
     VueCookieNext.setCookie("isAdmin", user.is_admin ? "true" : "false", {

@@ -1,98 +1,18 @@
-<template>
-  <!-- 관리자 대시보드의 메인 템플릿 -->
-  <div class="max-w-md mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
-    <h1 class="text-4xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
-
-    <!-- 온라인/오프라인 필터링 토글 버튼 -->
-    <div class="flex justify-end mb-4">
-      <div
-        class="relative inline-block w-11 align-middle select-none transition duration-200 ease-in"
-      >
-        <input
-          type="checkbox"
-          name="toggle"
-          id="toggle"
-          class="toggle-checkbox hidden"
-          v-model="showOfflineOnly"
-        />
-        <label
-          for="toggle"
-          class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"
-        ></label>
-      </div>
-    </div>
-
-    <!-- 전체 Todo 목록 보기 버튼 -->
-    <button @click="goToTodoBoard" class="border-2 rounded-lg p-1 w-full mb-6">
-      TodoBoard
-    </button>
-
-    <!-- 로그아웃 버튼 -->
-    <button @click="logout" class="border-2 rounded-lg p-1 w-full mb-6">
-      로그아웃
-    </button>
-
-    <!-- 차트 컨테이너 -->
-    <div class="chart-container my-6">
-      <canvas id="userActivityChart"></canvas>
-    </div>
-
-    <!-- 사용자 목록 -->
-    <div
-      v-for="user in filteredUsers"
-      :key="user.id"
-      class="user-entry mb-4 border-2 rounded-lg p-1 w-full"
-    >
-      <div class="user-info">
-        <h2 class="text-2xl font-bold text-gray-800">
-          <!-- 사용자 이름과 할 일 수 표시 -->
-          <router-link :to="`/${user.id}/todos`">{{ user.name }}</router-link>
-          <span class="ml-4 mr-4">({{ user.todoCount }} Todos)</span>
-
-          <!-- 온라인/오프라인 상태 표시 -->
-          <span
-            :class="{
-              'text-green-500': user.is_online,
-              'text-red-500': !user.is_online,
-            }"
-          >
-            {{ user.is_online ? "Online" : "Offline" }}
-          </span>
-        </h2>
-      </div>
-
-      <!-- 사용자별 권한 조절 버튼 -->
-      <div class="crud-buttons flex space-x-2 mt-2">
-        <button
-          :class="buttonClass(user.create_allowed)"
-          @click.prevent="togglePermission(user, 'create')"
-        >
-          Create
-        </button>
-        <button
-          :class="buttonClass(user.update_allowed)"
-          @click.prevent="togglePermission(user, 'update')"
-        >
-          Update
-        </button>
-        <button
-          :class="buttonClass(user.delete_allowed)"
-          @click.prevent="togglePermission(user, 'delete')"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 /** Vue, Axios, Vue Router, Vue Cookie 라이브러리 import */
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import {
+  ref,
+  computed,
+  onMounted,
+  onUnmounted,
+  nextTick,
+  watchEffect,
+} from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { VueCookieNext } from "vue-cookie-next";
 import { Chart, registerables } from "chart.js";
+
 Chart.register(...registerables);
 
 /** 사용자 정보 및 기타 상태를 위한 참조 변수 선언 */
@@ -101,8 +21,9 @@ const router = useRouter();
 const showOfflineOnly = ref(false);
 const loading = ref(true);
 const pollInterval = 5000;
-const chartInstance = ref(null);
 let poller = null;
+
+let chartInstance = ref(null);
 
 /** 사용자 데이터를 가져오는 함수 */
 const fetchUsers = async () => {
@@ -131,6 +52,20 @@ const fetchUsers = async () => {
   }
 };
 
+/** 차트 데이터 준비 */
+const chartData = computed(() => ({
+  labels: users.value.map((user) => user.name),
+  datasets: [
+    {
+      label: "Todos Count",
+      data: users.value.map((user) => user.todoCount),
+      backgroundColor: "rgba(54, 162, 235, 0.5)",
+      borderColor: "rgba(54, 162, 235, 1)",
+      borderWidth: 1,
+    },
+  ],
+}));
+
 /** 사용자 권한 변경 함수 */
 const togglePermission = async (user, permissionType) => {
   try {
@@ -149,7 +84,7 @@ const logout = async () => {
   try {
     const token = VueCookieNext.getCookie("token");
     if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      // axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
 
     await axios.post("/api/logout");
@@ -253,7 +188,7 @@ onMounted(async () => {
   }
 
   try {
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    // axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     await fetchUsers();
     createOrUpdateChart();
     startPolling();
@@ -261,6 +196,26 @@ onMounted(async () => {
     console.error("Error during mounting:", error);
   } finally {
     loading.value = false;
+  }
+
+  const ctx = document.getElementById("userActivityChart").getContext("2d");
+  chartInstance.value = new Chart(ctx, {
+    type: "bar",
+    data: chartData.value,
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
+  });
+});
+
+watchEffect(() => {
+  if (chartInstance.value) {
+    chartInstance.value.data = chartData.value;
+    chartInstance.value.update();
   }
 });
 
@@ -270,6 +225,100 @@ onUnmounted(() => {
   if (chartInstance.value) chartInstance.value.destroy();
 });
 </script>
+
+<template>
+  <!-- 관리자 대시보드의 메인 템플릿 -->
+  <div class="max-w-4xl mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
+    <h1 class="text-4xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
+
+    <!-- 온라인/오프라인 필터링 토글 버튼 -->
+    <div class="flex justify-end mb-4">
+      <div
+        class="relative inline-block w-11 align-middle select-none transition duration-200 ease-in"
+      >
+        <input
+          type="checkbox"
+          name="toggle"
+          id="toggle"
+          class="toggle-checkbox hidden"
+          v-model="showOfflineOnly"
+        />
+        <label
+          for="toggle"
+          class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"
+        ></label>
+      </div>
+    </div>
+
+    <!-- 전체 Todo 목록 보기 버튼 -->
+    <button @click="goToTodoBoard" class="border-2 rounded-lg p-1 w-full mb-6">
+      TodoBoard
+    </button>
+
+    <!-- 로그아웃 버튼 -->
+    <button @click="logout" class="border-2 rounded-lg p-1 w-full mb-6">
+      로그아웃
+    </button>
+
+    <div class="flex space-x-4">
+      <!-- 차트 컨테이너 -->
+      <div class="flex-1 chart-container">
+        <canvas id="userActivityChart"></canvas>
+      </div>
+
+      <!-- 사용자 목록 -->
+      <div class="flex-1">
+        <div
+          v-for="user in filteredUsers"
+          :key="user.id"
+          class="user-entry mb-4 border-2 rounded-lg p-1 w-full"
+        >
+          <div class="user-info">
+            <h2 class="text-2xl font-bold text-gray-800">
+              <!-- 사용자 이름과 할 일 수 표시 -->
+              <router-link :to="`/${user.id}/todos`">{{
+                user.name
+              }}</router-link>
+              <span class="ml-4 mr-4">({{ user.todoCount }} Todos)</span>
+
+              <!-- 온라인/오프라인 상태 표시 -->
+              <span
+                :class="{
+                  'text-green-500': user.is_online,
+                  'text-red-500': !user.is_online,
+                }"
+              >
+                {{ user.is_online ? "Online" : "Offline" }}
+              </span>
+            </h2>
+          </div>
+
+          <!-- 사용자별 권한 조절 버튼 -->
+          <div class="crud-buttons flex space-x-2 mt-2">
+            <button
+              :class="buttonClass(user.create_allowed)"
+              @click.prevent="togglePermission(user, 'create')"
+            >
+              Create
+            </button>
+            <button
+              :class="buttonClass(user.update_allowed)"
+              @click.prevent="togglePermission(user, 'update')"
+            >
+              Update
+            </button>
+            <button
+              :class="buttonClass(user.delete_allowed)"
+              @click.prevent="togglePermission(user, 'delete')"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .toggle-checkbox:checked + .toggle-label {

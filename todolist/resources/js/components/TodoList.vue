@@ -252,9 +252,9 @@ const totalPages = computed(() => {
 
 /** 폴링을 시작하는 함수 */
 const startPolling = () => {
-  poller = setInterval(() => {
-    fetchTodos();
-  }, pollInterval);
+  // poller = setInterval(() => {
+  //   fetchTodos();
+  // }, pollInterval);
 };
 /** 폴링을 중단하는 함수 */
 const stopPolling = () => {
@@ -268,7 +268,7 @@ onMounted(() => {
   const token = VueCookieNext.getCookie("token");
 
   if (token) {
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    // axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     fetchTodos();
     startPolling();
   } else {

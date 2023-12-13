@@ -11,7 +11,7 @@ const token = localStorage.getItem("token"); // 로컬 스토리지에서 토큰
 
 // 토큰이 존재하면 Axios 기본 헤더에 인증 토큰 설정
 if (token) {
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  // axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 }
 
 createApp(App).use(router).mount("#app");

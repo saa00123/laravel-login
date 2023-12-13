@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Todo;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class TodoDeleteController extends Controller
@@ -19,9 +20,12 @@ class TodoDeleteController extends Controller
     public function destroy($userId, $todoId)
     {
         try {
-            $todo = Todo::where('user_id', $userId)->where('id', $todoId)->firstOrFail();
+            $todo = Todo::query()
+                ->where('user_id', $userId)
+                ->where('id', $todoId)
+                ->firstOrFail();
             $todo->delete();
-            return response()->json(null, 204);
+            return response()->json(null, Response::HTTP_NO_CONTENT);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

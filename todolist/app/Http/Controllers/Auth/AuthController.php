@@ -17,29 +17,19 @@ class AuthController extends Controller
      * @param Request $request 요청 데이터
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        try {
-            $credentials = $request->validate([
-                'email' => 'required|email',
-                'password' => 'required',
-            ]);
-    
-            if (!Auth::attempt($credentials)) {
-                return response()->json(['message' => 'Invalid credentials'], 401);
-            }
-    
-            $user = Auth::user();
-            $user->is_online = true; 
-            $user->save();
-    
-            $token = $user->createToken('auth_token')->plainTextToken;
-    
-            return response()->json(['access_token' => $token, 'user' => $user]);
-        } catch (\Exception $e) {
-            Log::error('Login error: ' . $e->getMessage());
-            return response()->json(['error' => $e->getMessage()], 500);
+        if (!Auth::attempt($request->validated())) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
+    
+        $user = Auth::user();
+        $user->is_online = true; 
+        $user->save();
+    
+        $token = $user->createToken('auth_token')->plainTextToken;
+    
+        return response()->json(['access_token' => $token, 'user' => $user]);
     }
 
     /**

@@ -15,27 +15,17 @@ class TodoController extends Controller
      * @param int $userId 사용자 ID
      * @return \Illuminate\Http\JsonResponse
      */
-    public function indexForUser($userId)
+    public function indexForUser(User $user)
     {
-        try {
-            $user = User::find($userId);
+        $permissions = [
+            'create_allowed' => $user->create_allowed,
+            'update_allowed' => $user->update_allowed,
+            'delete_allowed' => $user->delete_allowed,
+        ];
     
-            if (!$user) {
-                return response()->json(['error' => 'User not found'], 404);
-            }
-
-            $permissions = [
-                'create_allowed' => $user->create_allowed,
-                'update_allowed' => $user->update_allowed,
-                'delete_allowed' => $user->delete_allowed,
-            ];
-
-            return response()->json([
-                'todos' => $user->todos,
-                'permissions' => $permissions
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        return response()->json([
+            'todos' => $user->todos,
+            'permissions' => $permissions
+        ]);
     }
 }

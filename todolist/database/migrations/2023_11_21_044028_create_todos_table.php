@@ -10,11 +10,12 @@ class CreateTodosTable extends Migration
     {
         Schema::create('todos', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            // $table->unsignedBigInteger('user_id');
             $table->string('title');
             $table->boolean('completed')->default(false);
             $table->timestamps();
-            $table->foreign('user_id')->references('id')->on('user')->onDelete('cascade');
+            // $table->foreign('user_id')->references('id')->on('user')->onDelete('cascade');
         });
     }
 
